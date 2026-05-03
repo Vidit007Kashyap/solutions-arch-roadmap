@@ -1,940 +1,692 @@
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 
-  :root {
-    --ph1: #1a3a5c; --ph1l: #e8f1fa; --ph1m: #378ADD;
-    --ph2: #0f5e46; --ph2l: #e1f5ee; --ph2m: #1D9E75;
-    --ph3: #6b2a0e; --ph3l: #faece7; --ph3m: #D85A30;
-    --ph4: #6a2040; --ph4l: #fbeaf0; --ph4m: #D4537E;
-    --ph5: #3b3589; --ph5l: #EEEDFE; --ph5m: #7F77DD;
-    --ph6: #5a3a00; --ph6l: #faeeda; --ph6m: #BA7517;
-    --ph7: #2c2c2a; --ph7l: #F1EFE8; --ph7m: #888780;
-  }
+.top-bar{padding:.75rem 1rem;border-bottom:.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.app-title{font-size:15px;font-weight:500;color:var(--color-text-primary);flex:1}
+.phase-pills{display:flex;gap:5px;flex-wrap:wrap}
+.pp{padding:4px 11px;border-radius:99px;font-size:11px;font-weight:500;cursor:pointer;border:.5px solid;transition:all .15s;white-space:nowrap}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+.layout{display:flex;min-height:600px}
+.sidebar{width:220px;flex-shrink:0;border-right:.5px solid var(--color-border-tertiary);overflow-y:auto;max-height:800px}
+.main{flex:1;overflow-y:auto;max-height:800px;padding:1rem}
 
-  body { font-family: var(--font-sans, system-ui); background: transparent; }
+.sb-phase{border-bottom:.5px solid var(--color-border-tertiary)}
+.sb-phase-hdr{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none}
+.sb-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sb-phase-name{font-size:12px;font-weight:500;color:var(--color-text-primary);flex:1;line-height:1.3}
+.sb-chev{font-size:10px;color:var(--color-text-tertiary);transition:transform .2s}
+.sb-phase.open .sb-chev{transform:rotate(90deg)}
+.sb-subjects{display:none;padding:0 0 6px 0}
+.sb-phase.open .sb-subjects{display:block}
+.sb-subj{padding:6px 12px 6px 28px;font-size:12px;color:var(--color-text-secondary);cursor:pointer;transition:background .1s;line-height:1.4}
+.sb-subj:hover{background:var(--color-background-secondary)}
+.sb-subj.active{color:var(--color-text-primary);font-weight:500}
 
-  .roadmap-header {
-    text-align: center;
-    padding: 2rem 1rem 1rem;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-    margin-bottom: 1.5rem;
-  }
+.view-phase{display:none}
+.view-phase.active{display:block}
+.view-subject{display:none}
+.view-subject.active{display:block}
 
-  .roadmap-header h1 {
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    letter-spacing: -0.3px;
-  }
+.phase-overview{}
+.ph-header{margin-bottom:1rem}
+.ph-title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.ph-meta{font-size:12px;color:var(--color-text-secondary);margin-top:3px}
+.ph-why{font-size:13px;line-height:1.7;color:var(--color-text-primary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:1rem}
 
-  .roadmap-header p {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin-top: 6px;
-  }
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:1rem}
+.subj-card{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;cursor:pointer;transition:background .15s}
+.subj-card:hover{background:var(--color-background-secondary)}
+.sc-num{font-size:10px;font-weight:500;margin-bottom:3px}
+.sc-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.sc-dur{font-size:11px;color:var(--color-text-tertiary)}
 
-  .phase-nav {
-    display: flex;
-    gap: 6px;
-    padding: 0 1rem 1rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    flex-wrap: wrap;
-  }
+.section-tabs{display:flex;border-bottom:.5px solid var(--color-border-tertiary);margin-bottom:1rem;overflow-x:auto;scrollbar-width:none}
+.section-tabs::-webkit-scrollbar{display:none}
+.stab{padding:7px 13px;font-size:12px;font-weight:500;color:var(--color-text-secondary);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.stab.on{color:var(--color-text-primary)}
 
-  .phase-nav::-webkit-scrollbar { display: none; }
+.panel{display:none}.panel.on{display:block}
 
-  .nav-pill {
-    padding: 5px 12px;
-    border-radius: 99px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 0.5px solid;
-    transition: all 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+.unit-card{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:8px;overflow:hidden}
+.unit-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer}
+.u-num{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;flex-shrink:0}
+.u-title{flex:1;font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.u-week{font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono,monospace);flex-shrink:0}
+.u-chev{font-size:10px;color:var(--color-text-tertiary);transition:transform .2s}
+.unit-card.open .u-chev{transform:rotate(90deg)}
+.unit-body{display:none;border-top:.5px solid var(--color-border-tertiary);padding:10px 12px}
+.unit-card.open .unit-body{display:block}
 
-  .nav-pill.active {
-    color: white !important;
-  }
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:7px;margin-bottom:10px}
+.topic-chip{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:7px 10px;font-size:12px;color:var(--color-text-primary)}
+.tc-name{font-weight:500;margin-bottom:2px}
+.tc-note{font-size:11px;color:var(--color-text-secondary)}
 
-  .timeline {
-    position: relative;
-    padding: 0 1rem 2rem;
-  }
+.insight-box{border-left:2px solid;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:8px 12px;font-size:12px;line-height:1.6;color:var(--color-text-primary);margin-top:8px}
 
-  .timeline-line {
-    position: absolute;
-    left: 2rem;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--color-border-tertiary);
-  }
+.proj-item{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px;margin-bottom:8px}
+.proj-lv{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;display:inline-block;margin-bottom:5px}
+.proj-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.proj-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
 
-  .phase-card {
-    position: relative;
-    margin-left: 3.5rem;
-    margin-bottom: 1.5rem;
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg, 12px);
-    background: var(--color-background-primary);
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-  }
+.res-row{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:.5px solid var(--color-border-tertiary)}
+.res-row:last-child{border-bottom:none}
+.res-type{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);flex-shrink:0;white-space:nowrap}
+.res-name{font-size:12px;color:var(--color-text-primary);font-weight:500}
+.res-sub{font-size:11px;color:var(--color-text-tertiary)}
 
-  .phase-card.expanded .phase-body {
-    display: block;
-  }
+.week-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.wk{font-size:10px;font-weight:500;font-family:var(--font-mono,monospace);padding:3px 8px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);flex-shrink:0;color:var(--color-text-secondary);min-width:52px;text-align:center;white-space:nowrap}
+.wk-task{font-size:12px;color:var(--color-text-primary);line-height:1.5}
 
-  .phase-dot {
-    position: absolute;
-    left: -3.18rem;
-    top: 1.3rem;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid var(--color-background-primary);
-    cursor: pointer;
-    z-index: 2;
-    transition: transform 0.15s;
-  }
+.mistake-row{display:flex;gap:8px;margin-bottom:9px;align-items:flex-start}
+.m-dot{width:16px;height:16px;border-radius:50%;background:var(--color-background-danger);color:var(--color-text-danger);font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.m-text{font-size:12px;color:var(--color-text-primary);line-height:1.5}
+.m-text b{font-weight:500}
 
-  .phase-dot:hover { transform: scale(1.2); }
+.breadcrumb{font-size:11px;color:var(--color-text-tertiary);margin-bottom:1rem;cursor:pointer}
+.breadcrumb span{color:var(--color-text-secondary)}
+.breadcrumb span:hover{color:var(--color-text-primary)}
+.subj-title-bar{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}
+.subj-title{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.subj-dur-badge{font-size:10px;font-weight:500;padding:3px 9px;border-radius:99px}
 
-  .phase-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .phase-num {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    padding: 2px 8px;
-    border-radius: 99px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .phase-title-block { flex: 1; }
-
-  .phase-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    line-height: 1.3;
-  }
-
-  .phase-subtitle {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-    margin-top: 3px;
-  }
-
-  .phase-duration {
-    font-size: 11px;
-    color: var(--color-text-tertiary);
-    font-family: var(--font-mono, monospace);
-    flex-shrink: 0;
-    margin-top: 3px;
-  }
-
-  .phase-chevron {
-    font-size: 12px;
-    color: var(--color-text-tertiary);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-    margin-top: 4px;
-  }
-
-  .phase-card.expanded .phase-chevron { transform: rotate(90deg); }
-
-  .phase-body {
-    display: none;
-    border-top: 0.5px solid var(--color-border-tertiary);
-  }
-
-  .section-tabs {
-    display: flex;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .section-tabs::-webkit-scrollbar { display: none; }
-
-  .tab-btn {
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    white-space: nowrap;
-    transition: all 0.15s;
-  }
-
-  .tab-btn.active {
-    color: var(--color-text-primary);
-  }
-
-  .tab-content { padding: 1.25rem; }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .concept-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-    margin-top: 0.75rem;
-  }
-
-  .concept-chip {
-    background: var(--color-background-secondary);
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-md, 8px);
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    line-height: 1.4;
-  }
-
-  .concept-chip span {
-    display: block;
-    font-size: 11px;
-    color: var(--color-text-tertiary);
-    margin-top: 2px;
-  }
-
-  .project-item {
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-md, 8px);
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-
-  .project-level {
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 99px;
-    display: inline-block;
-    margin-bottom: 6px;
-    letter-spacing: 0.3px;
-  }
-
-  .project-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    margin-bottom: 4px;
-  }
-
-  .project-desc {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-  }
-
-  .resource-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 8px 0;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-  }
-
-  .resource-item:last-child { border-bottom: none; }
-
-  .resource-type {
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 7px;
-    border-radius: 99px;
-    flex-shrink: 0;
-    margin-top: 1px;
-    color: var(--color-text-secondary);
-    background: var(--color-background-secondary);
-    border: 0.5px solid var(--color-border-tertiary);
-  }
-
-  .resource-name {
-    font-size: 13px;
-    color: var(--color-text-primary);
-    line-height: 1.4;
-  }
-
-  .resource-sub {
-    font-size: 11px;
-    color: var(--color-text-tertiary);
-  }
-
-  .mistake-item {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: flex-start;
-  }
-
-  .mistake-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--color-background-danger);
-    color: var(--color-text-danger);
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .mistake-text {
-    font-size: 13px;
-    color: var(--color-text-primary);
-    line-height: 1.5;
-  }
-
-  .mistake-text strong {
-    color: var(--color-text-primary);
-    font-weight: 500;
-  }
-
-  .timeline-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: flex-start;
-  }
-
-  .week-badge {
-    font-size: 10px;
-    font-weight: 500;
-    font-family: var(--font-mono, monospace);
-    padding: 3px 8px;
-    border-radius: var(--border-radius-md, 8px);
-    background: var(--color-background-secondary);
-    border: 0.5px solid var(--color-border-tertiary);
-    flex-shrink: 0;
-    white-space: nowrap;
-    color: var(--color-text-secondary);
-    min-width: 56px;
-    text-align: center;
-  }
-
-  .week-task {
-    font-size: 13px;
-    color: var(--color-text-primary);
-    line-height: 1.5;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--color-text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 10px;
-  }
-
-  .mental-model {
-    background: var(--color-background-secondary);
-    border-left: 2px solid var(--color-border-secondary);
-    border-radius: 0 var(--border-radius-md, 8px) var(--border-radius-md, 8px) 0;
-    padding: 10px 14px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    line-height: 1.6;
-    font-style: italic;
-  }
-
-  .progress-bar-wrap {
-    display: flex;
-    gap: 4px;
-    margin-top: 1rem;
-    padding: 0 1rem 0.75rem;
-  }
-
-  .progress-seg {
-    height: 3px;
-    border-radius: 2px;
-    flex: 1;
-    background: var(--color-border-tertiary);
-    transition: background 0.3s;
-  }
-
-  .why-matters {
-    font-size: 13px;
-    color: var(--color-text-primary);
-    line-height: 1.7;
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius-md, 8px);
-    padding: 12px 14px;
-  }
-
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+.mm-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px;font-size:12px;font-style:italic;color:var(--color-text-primary);line-height:1.6;border-left:2px solid var(--color-border-secondary)}
 </style>
 
-<h2 class="sr-only">Solutions Architect Learning Roadmap — 7 phases from CS foundations to future computing</h2>
+<h2 class="sr-only">Complete 7-phase Solutions Architect Roadmap with full syllabuses for every subject</h2>
 
-<div class="roadmap-header">
-  <h1>World-Class Solutions Architect Roadmap</h1>
-  <p>7 phases · Theory + Practice · Beginner → Distinguished Architect</p>
+<div class="top-bar">
+  <span class="app-title">Solutions Architect Roadmap</span>
+  <div class="phase-pills" id="phase-pills"></div>
 </div>
 
-<div class="phase-nav" id="phase-nav"></div>
-
-<div class="progress-bar-wrap" id="progress-bar"></div>
-
-<div class="timeline">
-  <div class="timeline-line"></div>
-  <div id="phases-container"></div>
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main"></div>
 </div>
 
 <script>
-const phases = [
+const PH = [
   {
-    id: 1,
-    title: "Core CS Foundations",
-    subtitle: "Data Structures, OS, Networks, Databases, Math",
-    duration: "6–12 months",
-    color: { dot: "#378ADD", light: "#e8f1fa", dark: "#1a3a5c", mid: "#378ADD", border: "#185FA5" },
-    concepts: [
-      { name: "Data Structures & Algorithms", note: "Arrays, trees, graphs, heaps — O(n) analysis" },
-      { name: "Operating Systems", note: "Processes, threads, virtual memory, scheduling" },
-      { name: "Computer Networks", note: "TCP/IP, DNS, HTTP, congestion control, BGP" },
-      { name: "Database Theory", note: "Relational algebra, ACID, B-trees, query planning" },
-      { name: "Discrete Math", note: "Logic, sets, combinatorics, graph theory" },
-      { name: "Probability & Stats", note: "Distributions, Bayes, randomised algorithms" },
-      { name: "Computation Theory", note: "Automata, Turing machines, P vs NP intuition" },
-      { name: "CAP Theorem Basics", note: "Consistency vs availability trade-offs" },
-    ],
-    why: "Every great architect has experienced the humbling moment when a production incident traces back to a fundamental they skipped. Knowing why quicksort degrades to O(n²) or how TCP handles packet loss isn't trivia — it's the diagnostic vocabulary you reach for at 3am during an outage. This phase builds the shared language of all systems.",
-    projects: [
-      { level: "STARTER", name: "Algorithm Visualiser", desc: "Implement 15+ sorting/searching algorithms with complexity analysis. Benchmark against each other on real inputs." },
-      { level: "INTERMEDIATE", name: "Mini Shell + Process Manager", desc: "Build a Unix-like shell in C/Go. Handle fork(), exec(), pipes, signals. Observe scheduling in /proc." },
-      { level: "INTERMEDIATE", name: "Packet Analyser", desc: "Write a tool that captures and decodes raw TCP packets. Reconstruct HTTP streams. Visualise handshakes." },
-      { level: "ADVANCED", name: "Key-Value Store from Scratch", desc: "Implement a disk-backed KV store with B-tree indexing, WAL logging, and basic transaction support." },
-    ],
-    mentalModels: [
-      "Complexity as a budget: every operation spends from a fixed time/space account. Never overdraw.",
-      "The OS as a hotel concierge: it manages scarce resources (rooms = CPU, memory) among demanding guests (processes) using scheduling policies.",
-      "Networks as postal systems: packets are letters, IP is the zip code, TCP is a certified-mail service that retries until delivery is confirmed.",
-    ],
-    mistakes: [
-      { title: "Skipping complexity proofs", desc: "Memorising Big-O labels without deriving them. You'll misapply them under pressure. Derive at least the major ones by hand." },
-      { title: "Treating memory as infinite", desc: "Not reasoning about cache locality, virtual memory pages, or heap fragmentation. This causes unexplained slowdowns in real systems." },
-      { title: "Black-boxing the network stack", desc: "Assuming TCP 'just works'. When it doesn't (retransmits, HOL blocking), you need to know exactly why." },
-      { title: "Skipping probability", desc: "Randomised algorithms, consistent hashing, and load-balancing all require probabilistic thinking. Avoid this gap." },
-    ],
-    resources: [
-      { type: "BOOK", name: "CLRS — Introduction to Algorithms", sub: "The canonical reference. Read selectively, do the exercises." },
-      { type: "BOOK", name: "Operating Systems: Three Easy Pieces", sub: "Arpaci-Dusseau. Free online. Best OS text for practitioners." },
-      { type: "BOOK", name: "Computer Networking: A Top-Down Approach", sub: "Kurose & Ross. Builds from HTTP down to physical layer." },
-      { type: "BOOK", name: "Database Internals", sub: "Alex Petrov. How storage engines and distributed DBs actually work." },
-      { type: "COURSE", name: "MIT 6.006 + 6.046 (OCW)", sub: "Algorithms at university depth. Problem sets are essential." },
-      { type: "COURSE", name: "Stanford CS144 — Computer Networking", sub: "Build a TCP stack from scratch in C++." },
-      { type: "PRACTICE", name: "LeetCode (patterns, not grinding)", sub: "Focus on tree traversals, graph BFS/DFS, DP patterns — 150 curated problems." },
-    ],
-    schedule: [
-      { period: "Wk 1–4", task: "CLRS chapters 1–10. Implement every data structure from scratch in your language of choice." },
-      { period: "Wk 5–8", task: "OS Three Easy Pieces parts I–II. Build the mini shell project. Deep-dive /proc filesystem." },
-      { period: "Wk 9–12", task: "Kurose & Ross chapters 1–5. Build the packet analyser. Do the Wireshark labs." },
-      { period: "Mo 4–5", task: "Database Internals chapters 1–8. Start the KV store project. Study B-tree splits manually." },
-      { period: "Mo 6", task: "Discrete math review (MIT 6.042 OCW). Probability chapter from MML book. Integrate everything." },
-    ],
+    id:1, label:"Phase 1", title:"Core CS Foundations",
+    subtitle:"Data Structures, OS, Networks, Databases, Math",
+    duration:"6–12 months", color:{dot:"#378ADD",light:"#E6F1FB",dark:"#0C447C",mid:"#378ADD",border:"#185FA5"},
+    why:"Every great architect has experienced the humbling moment when a production incident traces back to a fundamental they skipped. Knowing why quicksort degrades or how TCP handles packet loss isn't trivia — it's the diagnostic vocabulary you reach for at 3am during an outage.",
+    subjects:[
+      {
+        id:"1-1", label:"1.1 Data Structures & Algorithms", duration:"6–8 wk",
+        why:"Algorithmic decisions made decades ago underpin every database engine, load balancer, and distributed lock you'll ever build. Derive, don't memorise.",
+        units:[
+          {num:"U1",title:"Complexity & asymptotic analysis",week:"Wk 1",topics:[{n:"Big-O, Ω, Θ notation",d:"Formal definitions"},{n:"Recurrence relations",d:"Master theorem, substitution"},{n:"Amortised analysis",d:"Aggregate, accounting, potential"},{n:"Time vs space trade-offs",d:"Choosing between memory & cycles"}],insight:"Derive at least 5 complexities from scratch. Never memorise — derive.",ic:"#185FA5"},
+          {num:"U2",title:"Linear structures",week:"Wk 1–2",topics:[{n:"Arrays & dynamic arrays",d:"Amortised O(1) append"},{n:"Linked lists",d:"Single/double, pointer arithmetic"},{n:"Stacks, queues, deque",d:"Array-backed & linked"},{n:"Circular buffer",d:"Critical for IoT message queues"}],insight:"Implement each from scratch, then read your stdlib source. The gap is the lesson.",ic:"#185FA5"},
+          {num:"U3",title:"Trees & heaps",week:"Wk 2–3",topics:[{n:"BST & AVL trees",d:"Rotation proofs"},{n:"Red-black trees",d:"Linux scheduler, std::map"},{n:"B-trees & B+ trees",d:"Every database index"},{n:"Heaps & priority queues",d:"O(n) heapify"},{n:"Trie, segment tree",d:"Autocomplete, range queries"}],insight:"Draw every rotation by hand before writing code. This is what you'll reach for when reading database papers.",ic:"#185FA5"},
+          {num:"U4",title:"Graphs",week:"Wk 3–4",topics:[{n:"BFS & DFS",d:"Connected components"},{n:"Dijkstra & Bellman-Ford",d:"Shortest paths"},{n:"Topological sort",d:"Dependency graphs, build systems"},{n:"MST — Prim's, Kruskal's",d:"Network cost optimisation"},{n:"Union-Find (DSU)",d:"O(α) effectively"}],insight:"Map graph algorithms to real systems: BFS=service discovery, Dijkstra=packet routing, topological sort=build systems.",ic:"#185FA5"},
+          {num:"U5",title:"Sorting, hashing & DP",week:"Wk 4–6",topics:[{n:"Merge, quick, heap sort",d:"Derive all complexities"},{n:"Non-comparison sorts",d:"Counting, radix — O(n) cases"},{n:"Hash maps & consistent hashing",d:"Collision, load factor, virtual nodes"},{n:"Bloom filter & HyperLogLog",d:"Probabilistic structures"},{n:"Dynamic programming",d:"4-step protocol: subproblem, recurrence, base, order"}],insight:"QuickSort's worst-case O(n²) has caused real production outages. Know when randomised pivot matters.",ic:"#185FA5"},
+        ],
+        projects:[{l:"STARTER",n:"Algorithm visualiser",d:"Implement 15+ algorithms. Plot actual vs theoretical runtime on random and adversarial inputs."},{l:"INTERMEDIATE",n:"In-memory KV store",d:"Hash map from scratch with dynamic resizing. Benchmark against stdlib."},{l:"ADVANCED",n:"LSM-tree skeleton",d:"MemTable (skip list), SSTables on disk, compaction. Bridges DSA to database internals."}],
+        resources:[{t:"BOOK",n:"CLRS — Introduction to Algorithms",s:"Chapters 1–17. Do exercises."},{t:"BOOK",n:"Algorithm Design Manual — Skiena",s:"War stories for real-world context."},{t:"COURSE",n:"MIT 6.006 + 6.046 (OCW)",s:"Free. Problem sets are the real value."},{t:"PRACTICE",n:"Neetcode 150 roadmap",s:"Focus on patterns, not grinding."}],
+        schedule:[{p:"Wk 1",t:"Complexity + linear structures. Implement from scratch. Derive 10 complexities."},{p:"Wk 2",t:"Trees: BST, AVL. Draw rotations before coding."},{p:"Wk 3–4",t:"Graphs: BFS, DFS, Dijkstra, topological sort. Build route planner."},{p:"Wk 5–6",t:"Sorting + DP: 20 problems using 4-step protocol. Consistent hashing deep dive."}],
+        mistakes:[{t:"Memorising without deriving",d:"Derive Big-O from recurrences. Do this once and it's permanent."},{t:"Skipping adversarial inputs",d:"Every algorithm has a worst-case trigger. Ask 'what breaks this?' for each one."},{t:"Treating hash maps as magic O(1)",d:"Collisions and rehashing make them O(n) when badly tuned."}],
+        mentalModels:["Complexity as a budget: every operation spends from a fixed time/space account. Never overdraw.","Consistent hashing will reappear in Phase 4 distributed databases. Build the intuition now."]
+      },
+      {
+        id:"1-2", label:"1.2 Operating Systems", duration:"5–7 wk",
+        why:"When a production server mysteriously slows down, understanding OS internals is the difference between a 5-minute diagnosis and a 5-hour war room. Every process, thread, and page fault has a cost.",
+        units:[
+          {num:"U1",title:"Processes & threads",week:"Wk 1",topics:[{n:"Process abstraction & PCB",d:"Context switching, process states"},{n:"System calls",d:"Kernel vs user mode, ~1µs overhead"},{n:"fork(), exec(), wait()",d:"Copy-on-write semantics"},{n:"Threads vs processes",d:"Cost differences, C10K problem"}],insight:"Measure syscall overhead yourself: tight loop calling getpid() with perf stat. The ~1000ns gap is visceral.",ic:"#0F6E56"},
+          {num:"U2",title:"CPU scheduling",week:"Wk 2",topics:[{n:"FIFO, SJF, Round Robin",d:"Derive trade-offs from metrics"},{n:"Multi-level feedback queue",d:"Priority queues that adapt"},{n:"Linux CFS",d:"vruntime, red-black tree runqueue"},{n:"Real-time scheduling",d:"EDF, RM — critical for IoT"}],insight:"Linux CFS uses a red-black tree (from DSA unit) ordered by vruntime. DSA and OS meet here.",ic:"#0F6E56"},
+          {num:"U3",title:"Memory management",week:"Wk 2–3",topics:[{n:"Virtual memory & paging",d:"Page tables, TLB"},{n:"Page replacement",d:"LRU, Clock, Belady anomaly"},{n:"Demand paging",d:"Page faults, working set model"},{n:"mmap & huge pages",d:"Used in databases, shared memory IPC"}],insight:"A page fault costs ~100µs. A TLB miss costs ~10ns. These numbers should influence every large data structure decision.",ic:"#0F6E56"},
+          {num:"U4",title:"Concurrency & sync",week:"Wk 3–4",topics:[{n:"Race conditions & critical sections",d:"Atomicity violations"},{n:"Mutex, semaphores, CV",d:"Correctness proofs, Mesa vs Hoare"},{n:"Deadlock",d:"Coffman conditions — prevention, detection"},{n:"Lock-free structures",d:"CAS, ABA problem, memory ordering"}],insight:"Deadlock's four conditions reappear in distributed systems. You'll use this again in Phase 4.",ic:"#0F6E56"},
+          {num:"U5",title:"File systems & I/O",week:"Wk 4–6",topics:[{n:"inodes, VFS layer",d:"Abstraction over FS types"},{n:"Journaling & crash consistency",d:"Ordered vs writeback"},{n:"epoll & io_uring",d:"C10K solution, next-gen async I/O"},{n:"Containers",d:"cgroups + namespaces — what Docker does"}],insight:"epoll is why Node.js, nginx, Redis are single-threaded yet handle thousands of connections.",ic:"#0F6E56"},
+        ],
+        projects:[{l:"STARTER",n:"Mini shell",d:"fork/exec, pipes, I/O redirection, signal handling. Every feature needs a different syscall."},{l:"INTERMEDIATE",n:"Memory allocator",d:"malloc/free via sbrk. Bump allocator → free list → coalescing. Benchmark vs glibc."},{l:"ADVANCED",n:"FUSE file system",d:"In-memory FS: create/read/write/delete files. Add disk persistence layer."}],
+        resources:[{t:"BOOK",n:"OS: Three Easy Pieces (OSTEP)",s:"Free at ostep.org. The best OS text for practitioners."},{t:"BOOK",n:"Linux Kernel Development — Robert Love",s:"Chapter-level overview of kernel subsystems."},{t:"COURSE",n:"MIT 6.S081 xv6 labs",s:"Build a real OS. The labs are the best OS hands-on in existence."},{t:"TOOL",n:"strace, perf, /proc",s:"Real OS learning happens by observing real systems."}],
+        schedule:[{p:"Wk 1",t:"OSTEP Part 1 (processes). Mini shell. Instrument with strace."},{p:"Wk 2",t:"Scheduling. Study Linux CFS source. Map to red-black tree."},{p:"Wk 3",t:"Concurrency. Implement producer-consumer, readers-writers, dining philosophers."},{p:"Wk 4",t:"Memory management. Memory allocator project. Measure TLB misses with perf."},{p:"Wk 5–6",t:"File systems + I/O. FUSE project. epoll vs io_uring benchmark."}],
+        mistakes:[{t:"Ignoring /proc",d:"/proc is a live kernel state view. Make it your first debugging tool, always."},{t:"Treating context switches as free",d:"A context switch costs 1,000–10,000ns. Tight loops switching 1,000 threads are slower than 10 async workers."},{t:"Not understanding copy-on-write",d:"fork() doesn't copy memory — CoW does it on first write. This is why Redis fork()-based persistence is fast until you start writing."}],
+        mentalModels:["The OS as a hotel concierge: it manages scarce resources among demanding guests using scheduling policies.","Every Docker container is 7 Linux kernel features (namespaces + cgroups) composed together."]
+      },
+      {
+        id:"1-3", label:"1.3 Computer Networks", duration:"4–5 wk",
+        why:"Every web request, database query, and IoT sensor reading transits a network. The architect who treats networking as a black box will misdiagnose latency spikes and misunderstand why distributed transactions are hard.",
+        units:[
+          {num:"U1",title:"Architecture & physical layer",week:"Wk 1",topics:[{n:"OSI vs TCP/IP model",d:"Practical differences"},{n:"End-to-end argument",d:"Foundational design principle"},{n:"Ethernet, MAC, switches",d:"L2 forwarding, ARP"},{n:"Shannon's theorem",d:"C = B·log₂(1+S/N) — the ceiling"}],insight:"The end-to-end argument explains why TCP is in the OS, why NAT is a hack, and why retries belong in the application layer.",ic:"#993C1D"},
+          {num:"U2",title:"IP & routing",week:"Wk 2",topics:[{n:"IPv4/IPv6 & CIDR",d:"Fragmentation, prefix notation"},{n:"Distance vector (RIP)",d:"Bellman-Ford, count-to-infinity"},{n:"Link state (OSPF)",d:"Dijkstra applied to networks"},{n:"BGP",d:"Path vector — how the internet routes"},{n:"SDN",d:"Programmable data planes"}],insight:"BGP misconfiguration caused the Facebook 2021 outage. Understanding BGP isn't academic — it's incident forensics.",ic:"#993C1D"},
+          {num:"U3",title:"TCP & transport layer",week:"Wk 2–3",topics:[{n:"Three-way handshake",d:"SYN, SYN-ACK, ACK + teardown"},{n:"Flow & congestion control",d:"Sliding window, AIMD, CUBIC, BBR"},{n:"TCP HOL blocking",d:"Why HTTP/2 moved to QUIC"},{n:"UDP & QUIC",d:"When UDP wins; HTTP/3 transport"}],insight:"TCP congestion control (AIMD) is provably fair across competing flows. Understand it; you'll use it for backpressure design in Phase 4.",ic:"#993C1D"},
+          {num:"U4",title:"Application layer & protocols",week:"Wk 3–4",topics:[{n:"HTTP/1.1, HTTP/2, HTTP/3",d:"Multiplexing, header compression"},{n:"DNS resolution",d:"Hierarchy, TTLs, DNS-over-HTTPS"},{n:"TLS internals",d:"Handshake, certificate chain"},{n:"MQTT",d:"IoT pub/sub — QoS levels 0/1/2"},{n:"gRPC & REST vs GraphQL",d:"When each wins"}],insight:"MQTT QoS levels map directly to distributed messaging guarantees you'll design in Phase 4. Learn them now.",ic:"#993C1D"},
+        ],
+        projects:[{l:"STARTER",n:"Packet analyser",d:"Raw sockets, parse Ethernet/IP/TCP headers, reassemble HTTP streams."},{l:"INTERMEDIATE",n:"HTTP server from scratch",d:"HTTP/1.1 in Go/Rust using raw TCP. Handle persistent connections. Benchmark vs nginx."},{l:"ADVANCED",n:"IoT MQTT broker",d:"Support QoS 0/1, topic subscriptions, retained messages, LWT. Connect real devices."}],
+        resources:[{t:"BOOK",n:"Computer Networking: A Top-Down Approach",s:"Kurose & Ross. Wireshark labs are mandatory."},{t:"BOOK",n:"TCP/IP Illustrated Vol. 1 — Stevens",s:"Definitive TCP/IP reference."},{t:"COURSE",n:"Stanford CS144",s:"Build a TCP/IP stack from scratch in C++."},{t:"TOOL",n:"Wireshark, tcpdump, mtr",s:"No substitute for watching packets."}],
+        schedule:[{p:"Wk 1",t:"OSI vs TCP/IP. Physical + data link. Capture and decode your own web traffic in Wireshark."},{p:"Wk 2",t:"IP + routing. Implement a toy routing table. Read Facebook 2021 outage post-mortem."},{p:"Wk 3",t:"TCP deep dive — handshake, congestion control. Build packet analyser."},{p:"Wk 4",t:"Application layer: DNS trace, TLS in Wireshark, MQTT. HTTP server + benchmark."},{p:"Wk 5",t:"QUIC internals, MQTT broker project, CDN architecture case study."}],
+        mistakes:[{t:"Thinking TCP guarantees cross-connection ordering",d:"TCP guarantees ordering within one connection. Between connections: no guarantees. Many distributed bugs live here."},{t:"Ignoring DNS in latency budgets",d:"An uncached DNS lookup is 50–200ms. Often the invisible culprit in 'slow first request' complaints."},{t:"Assuming network calls are fast",d:"Cross-DC: 50–100ms. Cross-continent: 150–300ms. Synchronous service chains multiply these."}],
+        mentalModels:["Networks as postal systems: packets are letters, IP is the zip code, TCP is certified mail that retries until delivery is confirmed.","Latency is physics: 1ms per 100km of fibre. A Sydney↔London round-trip is unavoidably ~250ms."]
+      },
+      {
+        id:"1-4", label:"1.4 Databases", duration:"5–6 wk",
+        why:"Databases are the memory of every application. Understanding how indexes work, why transactions are hard, and what the query planner is doing transforms you from someone who asks 'why is this slow?' to someone who already fixed it.",
+        units:[
+          {num:"U1",title:"Relational model & SQL",week:"Wk 1",topics:[{n:"Relational algebra",d:"Select, project, join — formal foundation"},{n:"Normalisation",d:"1NF → BCNF — when to and when not to"},{n:"Window functions & CTEs",d:"EXPLAIN ANALYZE on everything"},{n:"Null semantics",d:"Three-valued logic — the SQL gotcha"}],insight:"Run EXPLAIN ANALYZE on every query you write for the next month. The planner's decisions teach more than any book.",ic:"#72243E"},
+          {num:"U2",title:"Storage & indexing",week:"Wk 2",topics:[{n:"B+ tree indexes",d:"Page splits, dominant index type"},{n:"LSM-tree storage",d:"RocksDB, Cassandra — write-optimised"},{n:"Column stores",d:"Parquet, DuckDB — analytical queries"},{n:"Write-ahead logging",d:"Crash recovery foundation"}],insight:"A B+ tree lookup is O(log_k n) disk reads. On 10B rows: 4 reads vs 10B without index. The difference is astronomical.",ic:"#72243E"},
+          {num:"U3",title:"Query processing & optimisation",week:"Wk 2–3",topics:[{n:"Cost-based optimisation",d:"Statistics, cardinality estimation"},{n:"Join algorithms",d:"Nested loop, hash join, sort-merge"},{n:"Vectorised execution",d:"DuckDB/Snowflake vs Volcano model"},{n:"Index selectivity",d:"When the optimiser ignores your index"}],insight:"Query planner decisions are based on table statistics. Stale statistics cause bad plans. Run ANALYZE after bulk loads.",ic:"#72243E"},
+          {num:"U4",title:"Transactions & concurrency",week:"Wk 3–4",topics:[{n:"ACID properties",d:"Formal definitions"},{n:"2PL & MVCC",d:"PostgreSQL snapshot isolation, xmin/xmax"},{n:"Isolation levels",d:"Anomalies at each level — commit to memory"},{n:"Serialisability",d:"Conflict serializability, precedence graphs"}],insight:"Most production 'data corruption' bugs are isolation level mismatches. Know which anomalies each level permits.",ic:"#72243E"},
+          {num:"U5",title:"NoSQL & distributed DBs",week:"Wk 5–6",topics:[{n:"NoSQL data models",d:"KV, document, column-family, graph"},{n:"CAP theorem",d:"Preview of Subject 1.8"},{n:"Dynamo-style systems",d:"Consistent hashing, vector clocks, quorum"},{n:"Time-series DBs",d:"InfluxDB, TimescaleDB — IoT data model"}],insight:"Time-series databases are directly applicable to your IoT startup. Design your sensor data model here.",ic:"#72243E"},
+        ],
+        projects:[{l:"STARTER",n:"Query planner explainer",d:"EXPLAIN ANALYZE 10 slow queries. Document each plan node choice and what you'd change."},{l:"INTERMEDIATE",n:"KV store with B+ tree + WAL",d:"Extend DSA KV store with index, WAL, MVCC snapshot reads. Test crash recovery."},{l:"ADVANCED",n:"IoT time-series store",d:"Columnar storage, delta+RLE compression, downsampling, retention policies."}],
+        resources:[{t:"BOOK",n:"Database Internals — Alex Petrov",s:"Best practical book on storage engines."},{t:"BOOK",n:"Designing Data-Intensive Applications",s:"Kleppmann. Chapters 1–4 directly relevant."},{t:"PAPER",n:"ARIES Recovery Method — Mohan et al.",s:"The foundational crash recovery paper."},{t:"PAPER",n:"Architecture of a Database System",s:"Hellerstein et al. Free PDF. Best architectural overview."}],
+        schedule:[{p:"Wk 1",t:"Relational model + SQL. Design IoT startup schema. 20 queries, EXPLAIN on all."},{p:"Wk 2",t:"Storage + indexing. B+ tree. Read PostgreSQL heap.c and nbtree.c source."},{p:"Wk 3",t:"Query processing. Join algorithms. Toy query optimiser project."},{p:"Wk 4",t:"Transactions: reproduce each isolation anomaly in PostgreSQL. KV store with WAL."},{p:"Wk 5–6",t:"ARIES paper. Replication setup. NoSQL landscape. Time-series store project."}],
+        mistakes:[{t:"Treating indexes as always good",d:"On a write-heavy table (IoT sensor ingestion), 10 indexes can make writes 10× slower. Measure write impact."},{t:"Assuming READ COMMITTED prevents all anomalies",d:"It allows non-repeatable reads and phantoms. Know your default isolation level."},{t:"N+1 query pattern",d:"ORMs hide this. Always check the SQL your ORM generates."}],
+        mentalModels:["Every database uses a file system or raw block device. Journaling in ext4 and WAL in PostgreSQL solve the same crash-consistency problem.","The query optimiser is only as good as its statistics. Stale stats = bad plans = mysterious slowdowns."]
+      },
+      {
+        id:"1-5", label:"1.5 Discrete Math", duration:"3–4 wk",
+        why:"Discrete math is the mathematical language of CS. Graph theory lets you reason about networks. Logic lets you reason about program correctness. Combinatorics lets you calculate system capacity and event probability.",
+        units:[
+          {num:"U1",title:"Logic & proof techniques",week:"Wk 1",topics:[{n:"Propositional & predicate logic",d:"Truth tables, quantifiers"},{n:"Proof methods",d:"Direct, contrapositive, contradiction, induction"},{n:"Loop invariants",d:"How you prove algorithm correctness"}],insight:"Loop invariants are how you prove correctness of iterative algorithms AND how you reason about distributed system invariants.",ic:"#534AB7"},
+          {num:"U2",title:"Combinatorics & sets",week:"Wk 1–2",topics:[{n:"Counting principles",d:"Sum, product, inclusion-exclusion"},{n:"Permutations & combinations",d:"nPr, nCr — with/without repetition"},{n:"Pigeonhole principle",d:"Birthday paradox, hash collisions inevitable"}],insight:"The pigeonhole principle explains why hash collisions are inevitable and why consistent hashing needs virtual nodes.",ic:"#534AB7"},
+          {num:"U3",title:"Graph theory",week:"Wk 2",topics:[{n:"Graph definitions",d:"Directed, weighted, bipartite"},{n:"Graph colouring",d:"Chromatic number — register allocation"},{n:"Network flow",d:"Max-flow min-cut — resource allocation"},{n:"Bipartite matching",d:"Task assignment, market design"}],insight:"Max-flow min-cut is used in network capacity planning, image segmentation, and resource allocation.",ic:"#534AB7"},
+          {num:"U4",title:"Number theory & crypto foundations",week:"Wk 3",topics:[{n:"Modular arithmetic",d:"GCD, Fermat's little theorem"},{n:"RSA algorithm",d:"Key generation — why it works"},{n:"Diffie-Hellman",d:"Discrete log problem"},{n:"Hash function properties",d:"Collision, preimage resistance"}],insight:"Understanding the discrete log problem is why post-quantum cryptography matters (Phase 7 preview).",ic:"#534AB7"},
+        ],
+        projects:[{l:"STARTER",n:"Graph theory playground",d:"Euler circuit, max bipartite matching, network flow. Connect each to a real use case."},{l:"INTERMEDIATE",n:"RSA from scratch",d:"Key generation, Miller-Rabin primality test. Understand small exponent dangers."},{l:"INTERMEDIATE",n:"Birthday paradox simulator",d:"Simulate at different scales. Connect to hash collision probability."}],
+        resources:[{t:"BOOK",n:"Mathematics for CS — Leighton & Meyer",s:"MIT OCW. Free. Best discrete math text for CS students."},{t:"COURSE",n:"MIT 6.042J (OCW)",s:"Focus on logic, combinatorics, graph theory. Problem sets excellent."},{t:"PRACTICE",n:"Project Euler problems 1–50",s:"Mathematical programming. Reinforces number theory."}],
+        schedule:[{p:"Wk 1",t:"Logic + proof techniques. Prove 5 classic results. Write loop invariants for 3 DSA algorithms."},{p:"Wk 2",t:"Combinatorics + graph theory. Birthday paradox simulator. Network flow implementation."},{p:"Wk 3",t:"Number theory + RSA from scratch. Connect modular arithmetic to hash functions."},{p:"Wk 4",t:"Review. MIT 6.042 problem sets. Connect all concepts back to DSA and OS."}],
+        mistakes:[{t:"Skipping proof techniques",d:"Proving correctness of distributed protocols (Phase 4) requires this vocabulary."},{t:"Treating combinatorics as trivia",d:"Calculating shard collision probability or cache miss rates requires combinatorics. It's operational math."}],
+        mentalModels:["Graph colouring = register allocation in compilers = task scheduling without conflicts. One concept, multiple domains.","Discrete math is the vocabulary in which CS proofs are written. Skip it and you can't read the primary literature."]
+      },
+      {
+        id:"1-6", label:"1.6 Probability & Statistics", duration:"3–4 wk",
+        why:"Modern systems are probabilistic by design. Consistent hashing, Bloom filters, A/B testing, SLOs, and ML evaluation all require probabilistic reasoning. The engineer who thinks only in certainties is wrong about every system at scale.",
+        units:[
+          {num:"U1",title:"Probability foundations",week:"Wk 1",topics:[{n:"Kolmogorov axioms",d:"Formal probability foundation"},{n:"Conditional probability",d:"P(A|B), total probability theorem"},{n:"Bayes' theorem",d:"Prior, likelihood, posterior"},{n:"Law of large numbers",d:"Why averages stabilise"}],insight:"Bayes' theorem is the foundation of spam filters, intrusion detection, A/B test interpretation, and ML calibration.",ic:"#633806"},
+          {num:"U2",title:"Distributions & CLT",week:"Wk 1–2",topics:[{n:"Discrete distributions",d:"Bernoulli, Binomial, Poisson"},{n:"Continuous distributions",d:"Normal, Exponential, Log-normal"},{n:"Heavy-tailed distributions",d:"Power law — latency & internet traffic"},{n:"Central Limit Theorem",d:"Foundation of statistical inference"},{n:"Queuing theory M/M/1",d:"Arrival, service, utilisation"}],insight:"Latency distributions are almost always log-normal or heavy-tailed, not Gaussian. Mean latency is a lie.",ic:"#633806"},
+          {num:"U3",title:"Probabilistic algorithms",week:"Wk 2–3",topics:[{n:"Bloom filters",d:"False positive rate derivation"},{n:"Count-Min Sketch",d:"Frequency estimation in streams"},{n:"HyperLogLog",d:"Cardinality estimation — Redis PFCOUNT"},{n:"Reservoir sampling",d:"Uniform sampling from IoT streams"},{n:"Consistent hashing analysis",d:"Probability k/n keys remap on node change"}],insight:"HyperLogLog estimates distinct elements in a billion-item stream using 12KB of memory with 2% error.",ic:"#633806"},
+          {num:"U4",title:"Statistics for systems",week:"Wk 3",topics:[{n:"Percentiles: p50, p95, p99, p999",d:"What SLOs actually measure"},{n:"Hypothesis testing & A/B tests",d:"p-values, confidence intervals"},{n:"Little's Law L=λW",d:"Queue length, throughput, latency"},{n:"Anomaly detection",d:"Z-score, IQR — alerting systems"}],insight:"Little's Law: if avg latency is 100ms and you want 1000 req/s, your avg queue depth must be 100 requests. This is capacity planning.",ic:"#633806"},
+        ],
+        projects:[{l:"STARTER",n:"Bloom filter implementation",d:"Derive and verify the false positive rate formula. Show optimal m/n ratio."},{l:"INTERMEDIATE",n:"Load balancer simulation",d:"Random vs round-robin vs power-of-two-choices. Measure tail latency improvement."},{l:"INTERMEDIATE",n:"A/B test engine",d:"Random assignment, sample size calculator, significance test, confidence intervals."}],
+        resources:[{t:"BOOK",n:"Introduction to Probability — Blitzstein & Hwang",s:"Best for CS students. Free at probabilitybook.net."},{t:"COURSE",n:"MIT 6.041 (OCW)",s:"Excellent problem sets with engineering framing."},{t:"BOOK",n:"Think Stats — Allen Downey",s:"Free. Statistics for programmers. Real datasets."}],
+        schedule:[{p:"Wk 1",t:"Probability foundations + distributions. Blitzstein ch. 1–5. Bloom filter + false positive derivation."},{p:"Wk 2",t:"Probabilistic algorithms: HyperLogLog, Count-Min, reservoir sampling. Load balancer simulation."},{p:"Wk 3",t:"Statistics for systems. A/B test engine. Latency percentile analysis. Little's Law applied to projects."},{p:"Wk 4",t:"Queuing theory. HDR histogram. Review and connect to all previous Phase 1 subjects."}],
+        mistakes:[{t:"Using mean latency in SLOs",d:"A system with 99% at 1ms and 1% at 10s has 'mean' 110ms. Users feel the tail. Always monitor percentiles."},{t:"Misinterpreting p-values",d:"p < 0.05 does not mean 95% chance the result is real. Know the correct interpretation."},{t:"Treating all distributions as normal",d:"Network traffic, request rates, file sizes are power-law. Gaussian stats on power-law data gives catastrophically wrong estimates."}],
+        mentalModels:["Reliability budget: every system has an error budget (1 - SLO). Spend it deliberately on innovation, not accidentally on incidents.","Cost as a fifth dimension: fast, reliable, secure, scalable — but unaffordable is still a failed system."]
+      },
+      {
+        id:"1-7", label:"1.7 Theory of Computation", duration:"3–4 wk",
+        why:"Theory of computation defines the fundamental limits of what computers can and cannot do. NP-completeness tells you when to stop looking for a polynomial-time algorithm. Undecidability tells you what no amount of engineering can solve.",
+        units:[
+          {num:"U1",title:"Automata & formal languages",week:"Wk 1",topics:[{n:"DFA & NFA",d:"State machines — regex engines, lexers"},{n:"Regular languages",d:"Pumping lemma, closure properties"},{n:"Context-free grammars",d:"BNF, parse trees — SQL, JSON parsers"},{n:"Parsing algorithms",d:"LL, LR, Earley — how compilers parse"}],insight:"Every programming language parser and SQL engine is a context-free grammar recogniser. Build a tiny parser and demystify every parsing library.",ic:"#3B6D11"},
+          {num:"U2",title:"Turing machines & computability",week:"Wk 2",topics:[{n:"Turing machine model",d:"Tape, head, transition function"},{n:"The halting problem",d:"What no algorithm can solve"},{n:"Rice's theorem",d:"No non-trivial program property is decidable"},{n:"Turing completeness",d:"Why SQL and CSS are Turing complete"}],insight:"The halting problem proves no general static analyser can determine if all programs terminate. This is why linters have false positives.",ic:"#3B6D11"},
+          {num:"U3",title:"Complexity theory",week:"Wk 2–3",topics:[{n:"P vs NP",d:"The most important open problem in CS"},{n:"NP-completeness",d:"Cook-Levin, SAT — the hardness benchmark"},{n:"Approximation algorithms",d:"When exact is impossible — FPTAS, greedy bounds"},{n:"Practical NP-hard problems",d:"TSP, bin packing — appear in real scheduling"}],insight:"When you see a scheduling problem in production, NP-completeness intuition tells you immediately whether to look for exact or reach for heuristic.",ic:"#3B6D11"},
+          {num:"U4",title:"Type theory intro",week:"Wk 3–4",topics:[{n:"Lambda calculus",d:"β-reduction — foundation of functional languages"},{n:"Hindley-Milner type inference",d:"How Haskell/Rust infer types"},{n:"Curry-Howard correspondence",d:"Types = propositions, programs = proofs"}],insight:"Rust's borrow checker is a type system proof that memory is managed correctly. Type theory is why it works.",ic:"#3B6D11"},
+        ],
+        projects:[{l:"STARTER",n:"Regex engine",d:"NFA from regex, convert to DFA, run on input. Compare performance to re2."},{l:"INTERMEDIATE",n:"JSON parser from scratch",d:"Recursive-descent parser, schema validation. Handle all JSON spec edge cases."},{l:"INTERMEDIATE",n:"NP-hardness explorer",d:"Prove an IoT scheduling problem NP-hard. Implement greedy approximation. Measure ratio."}],
+        resources:[{t:"BOOK",n:"Introduction to Theory of Computation — Sipser",s:"Chapters 1–9. The definitive text. Very readable."},{t:"BOOK",n:"Computers & Intractability — Garey & Johnson",s:"NP-completeness bible. Reference for recognising NP-hard problems."},{t:"COURSE",n:"MIT 6.045J (OCW)",s:"Free lectures and problem sets."}],
+        schedule:[{p:"Wk 1",t:"Automata: DFA, NFA, regex. Build regex engine. Prove 2 languages non-regular."},{p:"Wk 2",t:"Turing machines + halting problem proof. Rice's theorem implications."},{p:"Wk 3",t:"Complexity: P vs NP. Identify 3 NP-complete problems in your IoT startup use cases."},{p:"Wk 4",t:"Lambda calculus + type theory. Connect to Rust ownership model (Phase 3 preview)."}],
+        mistakes:[{t:"Dismissing theory as academic",d:"NP-completeness shows up the moment you try to optimally schedule jobs or route vehicles. Recognise it early."},{t:"Conflating undecidable with unsolvable",d:"Static analysis tools solve undecidable problems heuristically every day. The distinction matters."}],
+        mentalModels:["Undecidability = no algorithm works for all inputs, not that no algorithm works for most practical inputs.","NP-complete problems are everywhere in systems: job scheduling, bin packing, graph colouring for resource allocation."]
+      },
+      {
+        id:"1-8", label:"1.8 CAP Theorem", duration:"2–3 wk",
+        why:"CAP theorem is where Phase 1 theory meets Phase 4 distributed systems. Every database choice — Cassandra vs PostgreSQL, Redis vs ZooKeeper — is ultimately a CAP trade-off. Understanding it properly requires all 7 subjects before it.",
+        units:[
+          {num:"U1",title:"CAP theorem — formal",week:"Wk 1",topics:[{n:"Consistency (linearisability)",d:"Every read sees most recent write"},{n:"Availability",d:"Every request gets a non-error response"},{n:"Partition tolerance",d:"System operates despite network partitions"},{n:"Gilbert & Lynch proof",d:"Why you can only have two during a partition"}],insight:"In practice you always have P (partitions happen). The real choice: during a partition, return stale data (AP) or error (CP)?",ic:"#5F5E5A"},
+          {num:"U2",title:"Consistency models spectrum",week:"Wk 1–2",topics:[{n:"Linearisability",d:"Strongest — operations appear instantaneous"},{n:"Causal consistency",d:"Causally related operations ordered"},{n:"Eventual consistency",d:"Replicas converge given no new updates"},{n:"PACELC model",d:"Latency/consistency trade-off always exists"}],insight:"'We use eventual consistency' tells you almost nothing. Ask which specific consistency model and what the conflict resolution strategy is.",ic:"#5F5E5A"},
+          {num:"U3",title:"Real-world classifications",week:"Wk 2",topics:[{n:"CP systems",d:"ZooKeeper, etcd — consistency over availability"},{n:"AP systems",d:"Cassandra, DynamoDB — availability over consistency"},{n:"Quorum reads/writes",d:"W + R > N — the quorum condition"},{n:"CRDTs",d:"Conflict-free replicated types — eventual consistency right"}],insight:"Cassandra's consistency level is tunable per-query. QUORUM gives consistency. LOCAL_ONE gives speed. You choose at query time.",ic:"#5F5E5A"},
+          {num:"U4",title:"Failure detection",week:"Wk 2–3",topics:[{n:"Split-brain",d:"Two leaders, data divergence — the nightmare"},{n:"Vector clocks",d:"Causality tracking — Dynamo conflict detection"},{n:"Gossip protocol",d:"Decentralised failure detection"},{n:"Phi Accrual detector",d:"Cassandra's adaptive failure detection"}],insight:"Split-brain is the nightmare of distributed systems. A network partition where both nodes accept writes requires a merge — or data loss.",ic:"#5F5E5A"},
+        ],
+        projects:[{l:"STARTER",n:"CAP decision matrix",d:"Document 10 real distributed systems. For each: CAP choice, consistency model, correct use case, wrong use case."},{l:"INTERMEDIATE",n:"Eventual consistency simulator",d:"3-node KV store with configurable partitions. Implement LWW. Observe divergence and convergence. Add vector clocks."},{l:"ADVANCED",n:"IoT CAP design document",d:"For each data type in your startup (device state, sensor readings, config), explicitly choose a consistency model and justify with CAP/PACELC."}],
+        resources:[{t:"PAPER",n:"Brewer's CAP Theorem + Gilbert & Lynch",s:"Read both: the conjecture and its proof."},{t:"PAPER",n:"CAP Twelve Years Later — Brewer 2012",s:"Brewer's nuanced refinement. CAP is not binary."},{t:"PAPER",n:"PACELC — Daniel Abadi 2012",s:"The more practical model. Latency/consistency trade-off always exists."},{t:"BOOK",n:"DDIA — Kleppmann, Chapter 9",s:"Most practical treatment of consistency for engineers."}],
+        schedule:[{p:"Wk 1",t:"CAP theorem. Gilbert & Lynch proof. PACELC paper. Classify 10 real systems."},{p:"Wk 2",t:"Consistency models. Brewer 2012 refinement. Eventual consistency simulator."},{p:"Wk 3",t:"IoT CAP design doc for your startup. CRDTs. Connect all 8 Phase 1 subjects."}],
+        mistakes:[{t:"Treating CAP as a one-time design decision",d:"Consistency requirements vary per operation. Read user profile = eventual OK. Charge credit card = must be linearisable."},{t:"Choosing AP without a conflict resolution strategy",d:"'Eventual consistency' without a merge strategy means 'we hope it works out'. Define it explicitly."}],
+        mentalModels:["CAP requires OS knowledge (processes), networks (partitions), databases (consistency), probability (quorum math). It is Phase 1's synthesis subject.","'CP or AP' is a false binary. You choose what happens during a partition, which is rare. Design for the normal case first."]
+      },
+    ]
   },
   {
-    id: 2,
-    title: "Systems & Software Engineering",
-    subtitle: "Design Patterns, Clean Architecture, Concurrency",
-    duration: "3–5 months",
-    color: { dot: "#1D9E75", light: "#e1f5ee", dark: "#0f5e46", mid: "#1D9E75", border: "#0F6E56" },
-    concepts: [
-      { name: "OOP & SOLID Principles", note: "Design for change, not just for today" },
-      { name: "GoF Design Patterns", note: "23 patterns — learn context, not just code" },
-      { name: "Clean Architecture", note: "Ports & adapters, dependency inversion, bounded contexts" },
-      { name: "Concurrency Primitives", note: "Locks, semaphores, actors, lock-free structures" },
-      { name: "API Design", note: "REST, gRPC, GraphQL — versioning and contracts" },
-      { name: "Testing Strategy", note: "Unit → integration → contract → chaos" },
-      { name: "Scalable Backend Patterns", note: "Caching, connection pools, circuit breakers" },
-      { name: "Domain-Driven Design", note: "Ubiquitous language, aggregates, bounded contexts" },
-    ],
-    why: "Theory without structure produces clever hacks. This phase is where you learn to build systems that other engineers can reason about, maintain, and extend six months later. The shift from 'making it work' to 'making it right' is the difference between a senior engineer and an architect.",
-    projects: [
-      { level: "STARTER", name: "Design Patterns Catalogue", desc: "Implement all 23 GoF patterns with real-world use cases, not toy examples." },
-      { level: "INTERMEDIATE", name: "URL Shortener (bit.ly clone)", desc: "REST API, caching layer, persistent store, rate limiting, analytics. Deploy it. Measure latency under load." },
-      { level: "INTERMEDIATE", name: "Real-Time Chat System", desc: "WebSocket server, message fan-out, presence detection, persistence. Handle 10k concurrent connections on a single machine." },
-      { level: "ADVANCED", name: "Ride-Sharing Dispatch Engine", desc: "Location matching, driver assignment algorithm, surge pricing model, trip state machine. Full system design doc required." },
-    ],
-    mentalModels: [
-      "Coupling as gravitational pull: every dependency makes two components harder to change independently. Design to minimise mass.",
-      "Concurrency as parallel universes: shared state is where universes collide. Design to minimise the collision surface.",
-      "Architecture as deferred decisions: the best architecture maximises the options you keep open, not the ones you commit to early.",
-    ],
-    mistakes: [
-      { title: "Pattern matching without context", desc: "Applying Singleton or Factory because they're familiar, not because the problem calls for them. Patterns are solutions to specific forces." },
-      { title: "Testing only the happy path", desc: "90% of bugs live in error paths, edge cases, and concurrent scenarios. Invest in property-based and fuzz testing." },
-      { title: "Ignoring the data model", desc: "Beautiful code on top of a broken schema. The data model outlives the code by years — design it first." },
-      { title: "Over-abstracting prematurely", desc: "Building a plugin system for a feature that will never have a second plugin. Wait for the third use case before abstracting." },
-    ],
-    resources: [
-      { type: "BOOK", name: "Clean Architecture — Robert C. Martin", sub: "Foundational. Read the SOLID chapters twice." },
-      { type: "BOOK", name: "Designing Data-Intensive Applications", sub: "Kleppmann. Best bridge between theory and real systems." },
-      { type: "BOOK", name: "Design Patterns — GoF (Gang of Four)", sub: "Timeless. Study with context — not as a shopping list." },
-      { type: "BOOK", name: "A Philosophy of Software Design — Ousterhout", sub: "Short, sharp, and corrects many popular misunderstandings." },
-      { type: "COURSE", name: "MIT 6.824 Distributed Systems (OCW)", sub: "Lecture 1–4 is relevant here; revisit fully in Phase 4." },
-      { type: "PRACTICE", name: "System Design Interview — Alex Xu", sub: "Use as a project idea generator, not as interview prep." },
-    ],
-    schedule: [
-      { period: "Wk 1–3", task: "Clean Architecture + SOLID deep dive. Refactor an existing project using the principles. Write the 'before vs after' analysis." },
-      { period: "Wk 4–6", task: "GoF patterns — implement 3 per week with real use cases. Code review each other's implementations." },
-      { period: "Wk 7–9", task: "URL Shortener project. Start simple, add complexity iteratively: caching → rate limiting → analytics." },
-      { period: "Wk 10–12", task: "Real-time chat system. Focus on concurrency model. Benchmark WebSocket throughput." },
-      { period: "Mo 4–5", task: "DDD study. Ride-sharing design doc first (2 weeks), then implementation (4 weeks)." },
-    ],
+    id:2, label:"Phase 2", title:"Systems & Software Engineering",
+    subtitle:"Design Patterns, Clean Architecture, Concurrency",
+    duration:"3–5 months", color:{dot:"#1D9E75",light:"#E1F5EE",dark:"#085041",mid:"#1D9E75",border:"#0F6E56"},
+    why:"This phase is where you learn to build systems that other engineers can reason about, maintain, and extend six months later. The shift from 'making it work' to 'making it right' is the difference between a senior engineer and an architect.",
+    subjects:[
+      {id:"2-1",label:"2.1 OOP & Design Patterns",duration:"4–5 wk",why:"Patterns are solutions to specific forces in context. Learning them without context trains only pattern-matching, not design thinking.",
+        units:[{num:"U1",title:"SOLID principles",week:"Wk 1",topics:[{n:"SRP, OCP, LSP",d:"Single responsibility, open/closed, Liskov"},{n:"ISP & DIP",d:"Interface segregation, dependency inversion"},{n:"SOLID violations",d:"Identifying and refactoring anti-patterns"}],insight:"SOLID principles are design-level heuristics, not laws. Understand when violating them is the correct choice.",ic:"#0F6E56"},{num:"U2",title:"GoF Design Patterns",week:"Wk 2–4",topics:[{n:"Creational: Factory, Builder, Singleton",d:"Object creation patterns"},{n:"Structural: Adapter, Decorator, Proxy",d:"Composition patterns"},{n:"Behavioural: Observer, Strategy, Command",d:"Interaction patterns"},{n:"Context, not catalogue",d:"Apply where forces match, not because familiar"}],insight:"Implement all 23 patterns with real-world use cases, not toy examples. The context is the lesson.",ic:"#0F6E56"}],
+        projects:[{l:"STARTER",n:"Design patterns catalogue",d:"All 23 GoF patterns with real-world use cases. Code review each."},{l:"INTERMEDIATE",n:"Plugin architecture",d:"Build an extensible system using Strategy + Factory. Add 3 plugins without modifying core."}],
+        resources:[{t:"BOOK",n:"Design Patterns — GoF",s:"Timeless. Study with context, not as a shopping list."},{t:"BOOK",n:"A Philosophy of Software Design — Ousterhout",s:"Short, sharp, corrects popular misunderstandings."}],
+        schedule:[{p:"Wk 1",t:"SOLID deep dive. Refactor an existing project. Write before/after analysis."},{p:"Wk 2–4",t:"GoF patterns — 3/week with real use cases."}],
+        mistakes:[{t:"Pattern matching without context",d:"Applying Singleton because it's familiar, not because the problem calls for it."},{t:"Over-abstracting prematurely",d:"Wait for the third use case before abstracting. Two is coincidence."}],
+        mentalModels:["Coupling as gravitational pull: every dependency makes two components harder to change independently.","Architecture as deferred decisions: maximise the options you keep open, not the ones you commit to early."]
+      },
+      {id:"2-2",label:"2.2 Clean Architecture",duration:"3–4 wk",why:"Clean architecture is the structural principle that makes large systems maintainable. Without it, every feature addition increases complexity non-linearly.",
+        units:[{num:"U1",title:"Layered architecture",week:"Wk 1",topics:[{n:"Ports & adapters (Hexagonal)",d:"Business logic isolated from I/O"},{n:"Dependency rule",d:"Dependencies point inward only"},{n:"Bounded contexts",d:"DDD — shared kernel, anti-corruption layer"}],insight:"The dependency rule is the single most important principle in architecture: dependencies always point toward higher-level policy.",ic:"#0F6E56"},{num:"U2",title:"Domain-Driven Design",week:"Wk 2–3",topics:[{n:"Ubiquitous language",d:"Code and domain expert speak the same language"},{n:"Aggregates & entities",d:"Consistency boundaries"},{n:"Domain events",d:"Decoupled communication within a domain"},{n:"Strategic DDD",d:"Context maps, bounded context relationships"}],insight:"Conway's Law: your architecture mirrors your org chart. DDD gives you a principled way to align the two.",ic:"#0F6E56"}],
+        projects:[{l:"INTERMEDIATE",n:"Refactor a monolith",d:"Take an existing codebase and extract bounded contexts using hexagonal architecture."},{l:"ADVANCED",n:"DDD-designed service",d:"Design and build a service with full DDD: entities, aggregates, domain events, ports & adapters."}],
+        resources:[{t:"BOOK",n:"Clean Architecture — Robert C. Martin",s:"Read SOLID chapters twice."},{t:"BOOK",n:"Domain-Driven Design — Eric Evans",s:"The blue book. Dense but definitive."}],
+        schedule:[{p:"Wk 1–2",t:"Clean Architecture book. Refactor project."},{p:"Wk 3–4",t:"DDD deep dive. Design IoT startup domain model using DDD vocabulary."}],
+        mistakes:[{t:"Ignoring the data model",d:"Beautiful code on a broken schema. The data model outlives the code by years. Design it first."},{t:"DDD as a technical pattern",d:"DDD is a communication tool first. If you're not talking to domain experts, you're doing it wrong."}],
+        mentalModels:["The dependency rule: outer layers know about inner layers. Inner layers know nothing about outer layers — ever.","Bounded contexts are team boundaries. Two teams sharing a context = coordination overhead."]
+      },
+      {id:"2-3",label:"2.3 Concurrency & Backend Design",duration:"4–5 wk",why:"Concurrency is where simple systems become complex. Every web server, database, and message broker is a concurrent system. Understanding this layer is what makes backend engineers into backend architects.",
+        units:[{num:"U1",title:"Concurrency patterns",week:"Wk 1–2",topics:[{n:"Thread pools & work queues",d:"Fixed vs dynamic sizing"},{n:"Actor model",d:"Erlang/Akka — message-passing concurrency"},{n:"CSP & goroutines",d:"Go's concurrency model"},{n:"Async/await & event loops",d:"Node.js, Python asyncio, Rust tokio"}],insight:"The actor model eliminates shared mutable state — each actor owns its state exclusively. This is the insight behind Erlang's 9-nines availability.",ic:"#0F6E56"},{num:"U2",title:"Scalable backend patterns",week:"Wk 3–5",topics:[{n:"Caching patterns",d:"Cache-aside, write-through, write-behind"},{n:"Connection pools",d:"Pool sizing — Little's Law applied"},{n:"Circuit breaker & bulkhead",d:"Failure isolation patterns"},{n:"Rate limiting",d:"Token bucket, leaky bucket — algorithms"}],insight:"A circuit breaker in software mirrors an electrical circuit breaker: it trips when failures exceed a threshold, preventing cascade.",ic:"#0F6E56"}],
+        projects:[{l:"INTERMEDIATE",n:"URL shortener",d:"REST API, caching layer, rate limiting, analytics. Deploy and measure latency under load."},{l:"INTERMEDIATE",n:"Real-time chat system",d:"WebSocket server, message fan-out, presence, persistence. Handle 10k concurrent connections."},{l:"ADVANCED",n:"Ride-sharing dispatch engine",d:"Location matching, surge pricing, trip state machine. Full system design doc required."}],
+        resources:[{t:"BOOK",n:"Designing Data-Intensive Applications — Kleppmann",s:"Chapters 1–4 for this phase."},{t:"BOOK",n:"System Design Interview — Alex Xu",s:"Use as project idea generator."}],
+        schedule:[{p:"Wk 1–2",t:"Concurrency: implement thread pool, actor system, async HTTP server."},{p:"Wk 3",t:"URL shortener project: start simple, add complexity iteratively."},{p:"Wk 4",t:"Real-time chat system. Focus on concurrency model. Benchmark WebSocket throughput."},{p:"Wk 5",t:"Ride-sharing design doc (2 wk), then implementation."}],
+        mistakes:[{t:"Testing only the happy path",d:"90% of bugs live in error paths and concurrent scenarios. Invest in property-based and fuzz testing."},{t:"Pool sizing by intuition",d:"Use Little's Law to calculate optimal pool size from latency and throughput targets."}],
+        mentalModels:["Concurrency as parallel universes: shared state is where universes collide. Design to minimise the collision surface.","Circuit breakers are the software equivalent of electrical safety systems: fast isolation prevents cascade."]
+      },
+    ]
   },
   {
-    id: 3,
-    title: "Modern Systems & Low-Level Engineering",
-    subtitle: "Rust/Zig, eBPF, Linux Internals, Performance",
-    duration: "4–6 months",
-    color: { dot: "#D85A30", light: "#faece7", dark: "#6b2a0e", mid: "#D85A30", border: "#993C1D" },
-    concepts: [
-      { name: "Memory Management Deep Dive", note: "Allocators, GC mechanics, stack vs heap" },
-      { name: "Rust Ownership Model", note: "Lifetimes, borrowing — safety without GC" },
-      { name: "Linux Kernel Internals", note: "VFS, scheduler (CFS), network stack, syscalls" },
-      { name: "eBPF Programming", note: "In-kernel observability, networking, security hooks" },
-      { name: "Performance Profiling", note: "perf, flamegraphs, cache misses, branch misprediction" },
-      { name: "SIMD & CPU Architecture", note: "Instruction pipelines, out-of-order execution, NUMA" },
-      { name: "Zero-Copy I/O", note: "io_uring, sendfile, DMA, mmap" },
-      { name: "Systems Programming in Zig", note: "Comptime, manual memory, C interop" },
-    ],
-    why: "Most engineers treat the kernel as magic. Architects who understand what happens below the syscall boundary make fundamentally different (better) decisions about data serialisation, I/O patterns, memory layout, and observability. This phase is what separates engineers who guess at performance from those who measure and understand it.",
-    projects: [
-      { level: "STARTER", name: "Memory Allocator in Rust", desc: "Implement a slab allocator and a bump allocator. Benchmark against the system malloc. Study fragmentation patterns." },
-      { level: "INTERMEDIATE", name: "eBPF Network Monitor", desc: "Write eBPF programs to trace TCP connections, measure per-process network I/O, and detect port scans — all without modifying application code." },
-      { level: "INTERMEDIATE", name: "High-Performance HTTP Server", desc: "Build an HTTP/1.1 server in Rust using io_uring. Achieve >500k req/s on a laptop. Profile with flamegraphs and eliminate hotspots." },
-      { level: "ADVANCED", name: "Custom Linux Scheduler Simulation", desc: "Implement a CFS-like scheduler in userspace. Simulate preemption, context switching cost, and vruntime accounting." },
-    ],
-    mentalModels: [
-      "Memory as a hierarchy of speed: registers (0.3ns) → L1 (1ns) → L2 (3ns) → L3 (10ns) → RAM (100ns) → SSD (100µs) → HDD (10ms). Every algorithm decision should consider where your data lives.",
-      "The kernel as a trusted intermediary: user space asks; kernel decides. Every syscall is a context switch costing ~1000ns. Batch them.",
-      "eBPF as a microscope: you can observe anything happening in the kernel without modifying it. This is the superpower of modern observability.",
-    ],
-    mistakes: [
-      { title: "Ignoring cache locality", desc: "Storing related data in non-contiguous memory causes cache misses that dominate runtime. Always think about access patterns." },
-      { title: "Assuming syscalls are free", desc: "A tight loop making individual read() calls for 1 byte each will be slower than reading a file in one call, even if the logic is identical." },
-      { title: "Premature unsafe code in Rust", desc: "Reaching for 'unsafe' before exhausting safe alternatives. The borrow checker is finding real bugs — fight it honestly." },
-      { title: "Profiling in the wrong environment", desc: "Micro-benchmarks that don't account for NUMA topology, CPU frequency scaling, or competing workloads mislead more than they inform." },
-    ],
-    resources: [
-      { type: "BOOK", name: "The Rust Programming Language", sub: "Official book. Free at doc.rust-lang.org. Read it fully." },
-      { type: "BOOK", name: "Systems Performance — Brendan Gregg", sub: "The bible of Linux performance. Every chapter is a career asset." },
-      { type: "BOOK", name: "Linux Kernel Development — Robert Love", sub: "Best intro to kernel subsystems for application developers." },
-      { type: "BOOK", name: "BPF Performance Tools — Brendan Gregg", sub: "Comprehensive eBPF reference with 150+ ready-to-use tools." },
-      { type: "COURSE", name: "Rustlings + Rust by Example", sub: "Hands-on exercises. Do both before writing production Rust." },
-      { type: "TOOL", name: "perf, flamegraph, bpftrace", sub: "Learn these tools on a real system, not a VM, for accurate profiles." },
-    ],
-    schedule: [
-      { period: "Wk 1–4", task: "Rust fundamentals (ownership, traits, lifetimes). Complete Rustlings. Implement the memory allocator." },
-      { period: "Wk 5–8", task: "Linux internals — Love's book chapters 1–10. Write syscall tracing tools with strace and ltrace. Study /proc." },
-      { period: "Wk 9–12", task: "eBPF — Gregg's BPF book chapters 1–8. Build the eBPF network monitor. Write 5+ custom bpftrace scripts." },
-      { period: "Mo 4", task: "Performance profiling — flamegraphs on real applications. io_uring deep dive. Build the HTTP server." },
-      { period: "Mo 5–6", task: "Advanced Rust (async, unsafe, FFI). SIMD exploration. Custom scheduler simulation project." },
-    ],
+    id:3, label:"Phase 3", title:"Modern Systems & Low-Level Engineering",
+    subtitle:"Rust/Zig, eBPF, Linux Internals, Performance",
+    duration:"4–6 months", color:{dot:"#D85A30",light:"#FAECE7",dark:"#712B13",mid:"#D85A30",border:"#993C1D"},
+    why:"Most engineers treat the kernel as magic. Architects who understand what happens below the syscall boundary make fundamentally different decisions about data serialisation, I/O patterns, and observability. This is what separates engineers who guess at performance from those who measure and understand it.",
+    subjects:[
+      {id:"3-1",label:"3.1 Rust Systems Programming",duration:"6–8 wk",why:"Rust's ownership model provides memory safety without garbage collection. Understanding it deeply prepares you to reason about memory in any language — and to build the fastest possible systems.",
+        units:[{num:"U1",title:"Ownership & borrowing",week:"Wk 1–3",topics:[{n:"Ownership rules",d:"Move semantics, copy vs clone"},{n:"Borrowing & lifetimes",d:"Shared refs, mutable refs, lifetime annotations"},{n:"The borrow checker",d:"Why it rejects your code — and why it's right"},{n:"Smart pointers",d:"Box, Rc, Arc, RefCell — when each applies"}],insight:"Fight the borrow checker honestly. Every rejection is finding a real bug. unsafe is last resort, not first.",ic:"#712B13"},{num:"U2",title:"Async Rust & systems topics",week:"Wk 4–6",topics:[{n:"async/await & tokio",d:"Async runtimes, task scheduling"},{n:"FFI & C interop",d:"Calling C from Rust and back"},{n:"Unsafe Rust",d:"When and how — memory model implications"},{n:"SIMD & intrinsics",d:"CPU-level parallelism in Rust"}],insight:"Rust's async model is zero-cost: futures don't allocate unless you explicitly box them. This is why Rust async servers match C in throughput.",ic:"#712B13"}],
+        projects:[{l:"STARTER",n:"Memory allocator in Rust",d:"Slab allocator and bump allocator. Benchmark vs system malloc. Study fragmentation."},{l:"INTERMEDIATE",n:"HTTP server with io_uring",d:"Achieve >500k req/s on a laptop. Profile with flamegraphs. Eliminate hotspots."}],
+        resources:[{t:"BOOK",n:"The Rust Programming Language",s:"Official book. Free at doc.rust-lang.org. Read fully."},{t:"COURSE",n:"Rustlings + Rust by Example",s:"Do both before writing production Rust."}],
+        schedule:[{p:"Wk 1–4",t:"Rust fundamentals. Rustlings. Implement memory allocator."},{p:"Wk 5–8",t:"Async Rust. io_uring. HTTP server. FFI project."}],
+        mistakes:[{t:"Reaching for unsafe prematurely",d:"The borrow checker is finding real bugs. Fight it honestly before using unsafe."},{t:"Boxing futures unnecessarily",d:"Dynamic dispatch via Box<dyn Future> negates zero-cost async. Use generics where possible."}],
+        mentalModels:["Ownership as a capability: you can only do what your capability allows. Pass it or borrow it — never duplicate it.","Lifetimes are compile-time proofs that references outlive their referents. The checker is a theorem prover."]
+      },
+      {id:"3-2",label:"3.2 Linux Internals & eBPF",duration:"5–6 wk",why:"eBPF lets you observe anything happening in the kernel without modifying it. Combined with deep Linux knowledge, it gives you superpowers in production debugging and observability.",
+        units:[{num:"U1",title:"Linux internals deep dive",week:"Wk 1–3",topics:[{n:"Linux scheduler internals",d:"CFS vruntime, runqueue management"},{n:"Network stack internals",d:"sk_buff, netfilter, XDP"},{n:"Memory subsystem",d:"NUMA, huge pages, memory compaction"},{n:"VFS & block layer",d:"How file I/O reaches the disk"}],insight:"strace shows you every syscall a process makes. Reading strace output fluently is a superpower you'll use weekly.",ic:"#712B13"},{num:"U2",title:"eBPF programming",week:"Wk 3–5",topics:[{n:"eBPF architecture",d:"Verifier, JIT compiler, maps"},{n:"Kprobes & tracepoints",d:"Attaching to kernel functions"},{n:"XDP & TC hooks",d:"High-performance packet processing"},{n:"bpftrace scripting",d:"One-liners for production debugging"},{n:"Cilium & Pixie",d:"eBPF in production — service mesh, observability"}],insight:"eBPF is the microscope of modern observability. You can observe anything in the kernel without modifying application code.",ic:"#712B13"}],
+        projects:[{l:"INTERMEDIATE",n:"eBPF network monitor",d:"Trace TCP connections, per-process network I/O, port scan detection — without modifying app code."},{l:"ADVANCED",n:"Custom Linux scheduler simulation",d:"CFS-like scheduler in userspace. Simulate preemption, context switch cost, vruntime accounting."}],
+        resources:[{t:"BOOK",n:"Systems Performance — Brendan Gregg",s:"The bible of Linux performance. Every chapter is a career asset."},{t:"BOOK",n:"BPF Performance Tools — Brendan Gregg",s:"Comprehensive eBPF reference with 150+ tools."},{t:"BOOK",n:"Linux Kernel Development — Robert Love",s:"Best intro to kernel subsystems."}],
+        schedule:[{p:"Wk 1–3",t:"Linux internals: Love's book ch. 1–10. Syscall tracing. Study /proc and /sys."},{p:"Wk 3–5",t:"eBPF: Gregg's book ch. 1–8. Build network monitor. Write 5+ bpftrace scripts."},{p:"Wk 6",t:"XDP packet processing. Scheduler simulation project."}],
+        mistakes:[{t:"Profiling in the wrong environment",d:"Micro-benchmarks ignoring NUMA topology or CPU frequency scaling mislead more than they inform."},{t:"Assuming syscalls are free",d:"A tight loop with individual 1-byte read() calls is catastrophically slower than one buffered read."}],
+        mentalModels:["Memory hierarchy: registers (0.3ns) → L1 (1ns) → L2 (3ns) → L3 (10ns) → RAM (100ns) → SSD (100µs). Every algorithm decision should consider where data lives.","The kernel as a trusted intermediary: every syscall is a context switch costing ~1000ns. Batch them."]
+      },
+      {id:"3-3",label:"3.3 Performance Engineering",duration:"3–4 wk",why:"Performance engineering is not about premature optimisation. It's about having a methodology for finding real bottlenecks and a vocabulary for understanding them.",
+        units:[{num:"U1",title:"Profiling & measurement",week:"Wk 1–2",topics:[{n:"perf + flamegraphs",d:"CPU profiling, off-CPU analysis"},{n:"Cache miss analysis",d:"perf stat -e cache-misses"},{n:"Branch misprediction",d:"CPU pipeline stalls"},{n:"Latency vs throughput",d:"They trade off differently"}],insight:"Flamegraphs were invented by Brendan Gregg. Every wide tower is a bottleneck. Learn to read them in 30 seconds.",ic:"#712B13"},{num:"U2",title:"Low-level optimisation",week:"Wk 2–4",topics:[{n:"Cache-friendly data structures",d:"AoS vs SoA, struct padding"},{n:"SIMD vectorisation",d:"Auto-vectorisation, AVX2 intrinsics"},{n:"Zero-copy I/O",d:"sendfile, mmap, DMA"},{n:"Lock-free programming",d:"Memory ordering: relaxed, acquire, release, seq_cst"}],insight:"Struct padding and AoS vs SoA layout can 10x performance on hot loops by eliminating cache misses. Measure first.",ic:"#712B13"}],
+        projects:[{l:"INTERMEDIATE",n:"Performance audit",d:"Profile any previous project. Generate flamegraph. Identify top 3 bottlenecks. Fix all 3. Document before/after."},{l:"ADVANCED",n:"Zero-copy file server",d:"Serve large files using sendfile and io_uring. Measure throughput vs naive read/write implementation."}],
+        resources:[{t:"BOOK",n:"Systems Performance — Brendan Gregg",s:"The definitive reference. USE method for every resource."},{t:"TOOL",n:"perf, flamegraph.pl, bpftrace",s:"Learn these on a real system, not a VM."}],
+        schedule:[{p:"Wk 1",t:"Gregg's USE method. perf stat, perf record, flamegraph generation on existing projects."},{p:"Wk 2",t:"Cache analysis. Rewrite one data structure for better locality. Measure improvement."},{p:"Wk 3–4",t:"SIMD + zero-copy I/O. Zero-copy file server project."}],
+        mistakes:[{t:"Optimising before measuring",d:"Intuition about bottlenecks is wrong ~70% of the time. Always profile first."},{t:"Ignoring cache locality",d:"Storing related data non-contiguously causes cache misses that dominate runtime."}],
+        mentalModels:["The USE method: Utilisation, Saturation, Errors — apply to every resource before concluding anything about performance.","Every wide tower in a flamegraph is a bottleneck. Every thin tower is fine. Read width, not height."]
+      },
+    ]
   },
   {
-    id: 4,
-    title: "Distributed Systems & Large-Scale Architecture",
-    subtitle: "CAP, Microservices, Fault Tolerance, Petabyte Scale",
-    duration: "5–7 months",
-    color: { dot: "#D4537E", light: "#fbeaf0", dark: "#6a2040", mid: "#D4537E", border: "#993556" },
-    concepts: [
-      { name: "Consensus Algorithms", note: "Raft, Paxos, Multi-Paxos — leader election, log replication" },
-      { name: "Consistency Models", note: "Strong, linearisable, eventual, causal — when to use which" },
-      { name: "Microservices Architecture", note: "Service mesh, sidecar, circuit breaking, bulkhead" },
-      { name: "Event-Driven Architecture", note: "Kafka, event sourcing, CQRS, outbox pattern" },
-      { name: "Sharding & Replication", note: "Consistent hashing, virtual nodes, hot-spot avoidance" },
-      { name: "Stream Processing", note: "Flink, Kafka Streams, watermarks, exactly-once semantics" },
-      { name: "Petabyte-Scale Storage", note: "Columnar formats, LSM trees, compaction, tiered storage" },
-      { name: "Fault Tolerance Patterns", note: "Retry, idempotency, saga, compensating transactions" },
-    ],
-    why: "The leap to large-scale distributed systems is where most engineers hit an invisible wall. The rules change: you can't assume messages deliver, clocks agree, or nodes stay alive. Every design decision now has a failure mode with a probability. Architects at this level build systems that degrade gracefully, not ones that just work when nothing goes wrong.",
-    projects: [
-      { level: "INTERMEDIATE", name: "Raft Consensus Implementation", desc: "Build Raft from scratch in Go or Rust. Pass the TLA+ spec tests. Observe split-brain scenarios and recovery." },
-      { level: "INTERMEDIATE", name: "Distributed Key-Value Store", desc: "Extend Phase 1's KV store with replication, consistent hashing, anti-entropy, and read-repair. 3-node cluster minimum." },
-      { level: "ADVANCED", name: "YouTube-Scale Video Pipeline Design", desc: "Full design doc: upload, transcoding, CDN distribution, recommendation data pipeline. Handle 500 hours of video uploaded per minute." },
-      { level: "ADVANCED", name: "Ride-Sharing at Uber Scale", desc: "Real-time location matching (geospatial indexing), surge pricing (stream processing), trip state machine (event sourcing), driver supply forecasting." },
-    ],
-    mentalModels: [
-      "Networks lie: packets get delayed, reordered, duplicated, and dropped. Design as if any message can be delivered zero or infinite times.",
-      "Time is a social construct in distributed systems: clocks drift. Use logical clocks (Lamport, vector) for causality, not wall clocks.",
-      "Failure is the default: a system running for 5 years on 1000 nodes sees a disk failure every 3 days. Design for failure as the expected case.",
-    ],
-    mistakes: [
-      { title: "Conflating availability with reliability", desc: "A system can be 99.9% available but still lose data. Understand durability, availability, and reliability as separate axes." },
-      { title: "Ignoring the network partition case", desc: "CAP theorem is about what happens during a partition. Most engineers never test this. Use Chaos Engineering from day one." },
-      { title: "Eventual consistency without conflict resolution", desc: "Choosing eventual consistency without defining the merge strategy for concurrent writes. This is where data corruption hides." },
-      { title: "Microservices as the default", desc: "Decomposing a team of 5 into 20 microservices. Conway's Law means your architecture mirrors your org chart — plan accordingly." },
-    ],
-    resources: [
-      { type: "BOOK", name: "Designing Data-Intensive Applications", sub: "Kleppmann. The single best book for this phase." },
-      { type: "BOOK", name: "Understanding Distributed Systems", sub: "Roberto Vitillo. Practical and concise. Read first." },
-      { type: "PAPER", name: "The Raft Consensus Algorithm (Ongaro)", sub: "raft.github.io — read the extended paper, not just the summary." },
-      { type: "PAPER", name: "Dynamo: Amazon's Highly Available KV Store", sub: "Foundational paper. Every distributed DB borrows from it." },
-      { type: "PAPER", name: "MapReduce, Bigtable, GFS (Google trilogy)", sub: "Historical but still the clearest explanation of distributed patterns." },
-      { type: "COURSE", name: "MIT 6.824 Distributed Systems", sub: "The labs (Raft, KV store, Shard KV) are the best hands-on in existence." },
-      { type: "COURSE", name: "Martin Kleppmann's Cambridge Distributed Systems lectures", sub: "Free on YouTube. Academic depth, practical framing." },
-    ],
-    schedule: [
-      { period: "Wk 1–4", task: "Read Understanding Distributed Systems cover-to-cover. Start Raft implementation in parallel." },
-      { period: "Wk 5–8", task: "MIT 6.824 labs 1–3 (MapReduce, Raft, KV store). These are hard — budget 20+ hours per lab." },
-      { period: "Wk 9–12", task: "DDIA chapters 5–9 (replication, partitioning, transactions, consistency). Build distributed KV store." },
-      { period: "Mo 4–5", task: "Event-driven architecture: Kafka deep dive, event sourcing, CQRS. Build a real-time analytics pipeline." },
-      { period: "Mo 6–7", task: "Large-scale system design projects. YouTube design doc, then Uber scale project. Peer review required." },
-    ],
+    id:4, label:"Phase 4", title:"Distributed Systems & Large-Scale Architecture",
+    subtitle:"CAP Applied, Microservices, Fault Tolerance, Petabyte Scale",
+    duration:"5–7 months", color:{dot:"#D4537E",light:"#FBEAF0",dark:"#72243E",mid:"#D4537E",border:"#993556"},
+    why:"The leap to distributed systems is where most engineers hit an invisible wall. The rules change: you can't assume messages deliver, clocks agree, or nodes stay alive. Every design decision has a failure mode with a probability. Architects at this level build systems that degrade gracefully.",
+    subjects:[
+      {id:"4-1",label:"4.1 Consensus & Replication",duration:"5–6 wk",why:"Consensus is how distributed systems agree on anything. Without understanding Raft or Paxos, you're using ZooKeeper and etcd as black boxes — which means you can't debug them when they misbehave.",
+        units:[{num:"U1",title:"Consensus algorithms",week:"Wk 1–3",topics:[{n:"Raft — leader election",d:"Term numbers, RequestVote RPC"},{n:"Raft — log replication",d:"AppendEntries, commit index"},{n:"Raft — safety proofs",d:"Why two leaders can't commit in the same term"},{n:"Multi-Paxos",d:"How it differs from Raft conceptually"},{n:"Byzantine fault tolerance",d:"When nodes can lie — PBFT"}],insight:"Build Raft from scratch. Pass the TLA+ spec tests. Observe split-brain scenarios and recovery. This is the most educational distributed systems exercise in existence.",ic:"#72243E"},{num:"U2",title:"Replication patterns",week:"Wk 4–6",topics:[{n:"Single-leader replication",d:"WAL shipping, semi-synchronous"},{n:"Multi-leader replication",d:"Conflict detection, CRDTs"},{n:"Leaderless replication",d:"Dynamo-style, quorum reads/writes"},{n:"Anti-entropy & read repair",d:"How replicas catch up"}],insight:"Replication lag is the source of 80% of distributed database bugs. Measure it, alert on it, and design for it being non-zero.",ic:"#72243E"}],
+        projects:[{l:"INTERMEDIATE",n:"Raft implementation",d:"Build Raft in Go or Rust. Complete MIT 6.824 lab 2."},{l:"ADVANCED",n:"Distributed KV store",d:"3-node cluster with consistent hashing, anti-entropy, read-repair. MIT 6.824 lab 3."}],
+        resources:[{t:"PAPER",n:"In Search of an Understandable Consensus Algorithm (Raft)",s:"raft.github.io — read the extended paper."},{t:"PAPER",n:"Dynamo: Amazon's Highly Available KV Store",s:"Foundational. Every distributed DB borrows from it."},{t:"COURSE",n:"MIT 6.824 Distributed Systems",s:"Labs are the best distributed systems hands-on in existence."}],
+        schedule:[{p:"Wk 1–4",t:"Raft paper + implementation. MIT 6.824 labs 1–2. Budget 20+ hours per lab."},{p:"Wk 5–6",t:"Replication patterns. DDIA chapters 5–6. Distributed KV store."}],
+        mistakes:[{t:"Conflating availability with reliability",d:"A system can be 99.9% available but still lose data. Durability, availability, reliability are separate axes."},{t:"Not testing the partition case",d:"Most engineers never simulate network partitions. This is where the real bugs live."}],
+        mentalModels:["Networks lie: packets get delayed, reordered, duplicated, dropped. Design as if any message can be delivered zero or infinite times.","Time is a social construct: clocks drift. Use logical clocks for causality, not wall clocks."]
+      },
+      {id:"4-2",label:"4.2 Microservices & Event-Driven",duration:"4–5 wk",why:"Microservices are a team-topology strategy as much as a technical one. Event-driven architecture is how decoupled services communicate without tight coupling.",
+        units:[{num:"U1",title:"Microservices patterns",week:"Wk 1–2",topics:[{n:"Service decomposition",d:"Bounded contexts as service boundaries"},{n:"API gateway pattern",d:"Routing, auth, rate limiting at the edge"},{n:"Service mesh",d:"Istio/Linkerd — mTLS, circuit breaking, observability"},{n:"Saga pattern",d:"Distributed transactions without 2PC"}],insight:"Conway's Law means your microservices will mirror your org chart — for better or worse. Design your services as you design your team boundaries.",ic:"#72243E"},{num:"U2",title:"Event-driven architecture",week:"Wk 3–5",topics:[{n:"Event sourcing",d:"State as a sequence of events"},{n:"CQRS",d:"Command/query separation"},{n:"Kafka deep dive",d:"Partitions, consumer groups, offset management"},{n:"Exactly-once semantics",d:"Idempotency keys, transactional outbox"},{n:"Outbox pattern",d:"Reliable event publishing without 2PC"}],insight:"The outbox pattern solves the dual-write problem: write to your DB and publish an event atomically using the same transaction.",ic:"#72243E"}],
+        projects:[{l:"INTERMEDIATE",n:"Event-driven order system",d:"Order service, inventory service, payment service — communicating via Kafka. Implement saga for rollback."},{l:"ADVANCED",n:"CQRS + event sourcing",d:"Command side writes events. Query side materialises views. Time-travel debugging via event replay."}],
+        resources:[{t:"BOOK",n:"Designing Data-Intensive Applications — Kleppmann",s:"Chapters 7–9 (transactions, consistency, stream processing)."},{t:"BOOK",n:"Building Microservices — Sam Newman",s:"The definitive microservices reference."}],
+        schedule:[{p:"Wk 1–2",t:"Microservices patterns. Saga implementation. Service mesh setup."},{p:"Wk 3–5",t:"Kafka deep dive. Outbox pattern. Event-driven order system project."}],
+        mistakes:[{t:"Microservices as the default",d:"5 engineers + 20 microservices = coordination hell. Services should align with team boundaries."},{t:"Eventual consistency without conflict resolution",d:"Choosing AP without defining the merge strategy. This is where data corruption hides."}],
+        mentalModels:["Failure is the default: a 1000-node system sees a disk failure every 3 days. Design for failure as the expected case.","Event sourcing: state is a snapshot of events. Events are facts; they never change."]
+      },
+      {id:"4-3",label:"4.3 Large-Scale System Design",duration:"4–5 wk",why:"Designing systems at YouTube or Uber scale requires applying everything from Phases 1–4 simultaneously: algorithms for data structures, OS for I/O, networks for latency, databases for storage, probability for load distribution, and distributed systems for fault tolerance.",
+        units:[{num:"U1",title:"Petabyte-scale storage",week:"Wk 1–2",topics:[{n:"Data partitioning strategies",d:"Range, hash, directory partitioning"},{n:"Sharding & resharding",d:"Hot-spot avoidance, online resharding"},{n:"Columnar storage at scale",d:"Parquet, ORC, tiered storage"},{n:"Object storage",d:"S3 internals — eventual consistency, multipart"}],insight:"Online resharding (moving data while serving traffic) is one of the hardest distributed operations. Pinterest, Uber, and Stripe have all written post-mortems about it.",ic:"#72243E"},{num:"U2",title:"Stream processing at scale",week:"Wk 3–5",topics:[{n:"Lambda vs Kappa architecture",d:"Batch + stream vs stream-only"},{n:"Apache Flink internals",d:"Checkpointing, watermarks, state backends"},{n:"Exactly-once stream processing",d:"Chandy-Lamport distributed snapshots"},{n:"Real-time aggregation",d:"Time windows, out-of-order events"}],insight:"Flink's checkpointing is based on the Chandy-Lamport distributed snapshot algorithm from 1985. Old theory, new application.",ic:"#72243E"}],
+        projects:[{l:"ADVANCED",n:"YouTube-scale video pipeline",d:"Upload, transcoding, CDN distribution, recommendation pipeline. Design doc: 500 hours uploaded/minute."},{l:"ADVANCED",n:"Ride-sharing at Uber scale",d:"Real-time geospatial matching, surge pricing (stream), trip state (event sourcing), driver supply forecast."}],
+        resources:[{t:"PAPER",n:"Google MapReduce, Bigtable, GFS trilogy",s:"Historical but still the clearest explanation of distributed patterns."},{t:"BOOK",n:"Understanding Distributed Systems — Vitillo",s:"Practical and concise. Best bridge from theory to implementation."},{t:"COURSE",n:"MIT 6.824 Distributed Systems",s:"All labs completed in this phase."}],
+        schedule:[{p:"Wk 1–2",t:"Petabyte-scale storage patterns. YouTube design doc."},{p:"Wk 3–5",t:"Stream processing: Flink deep dive. Ride-sharing design + implementation."}],
+        mistakes:[{t:"Designing perfect systems",d:"At scale, everything fails. Design for graceful degradation, not perfection."},{t:"Ignoring the network partition case",d:"CAP theorem is about what happens during a partition. Use chaos engineering from day one."}],
+        mentalModels:["At petabyte scale, you don't ask 'will this fail?' — you ask 'how will this fail and what's the blast radius?'","System design is the art of making explicit trade-offs. Never let trade-offs remain implicit."]
+      },
+    ]
   },
   {
-    id: 5,
-    title: "Data Engineering & AI/ML Systems",
-    subtitle: "Pipelines, Vector DBs, LLM-Ops, Agentic Workflows",
-    duration: "4–6 months",
-    color: { dot: "#7F77DD", light: "#EEEDFE", dark: "#3b3589", mid: "#7F77DD", border: "#534AB7" },
-    concepts: [
-      { name: "Data Pipeline Architecture", note: "ETL vs ELT, medallion architecture, lineage" },
-      { name: "Batch vs Stream Processing", note: "Lambda, Kappa architectures; Flink vs Spark" },
-      { name: "Vector Databases", note: "HNSW, IVF, PQ compression — approximate nearest neighbours" },
-      { name: "Embeddings & Retrieval", note: "RAG pipelines, hybrid search, re-ranking" },
-      { name: "ML Model Lifecycle", note: "Feature stores, experiment tracking, model registry" },
-      { name: "ML Model Deployment", note: "Serving (batch/real-time), A/B testing, shadow mode" },
-      { name: "LLM-Ops", note: "Prompt versioning, evaluation frameworks, cost management" },
-      { name: "Agentic Systems", note: "Tool use, multi-agent orchestration, memory, planning" },
-    ],
-    why: "Data is now the primary product of most digital systems, and AI/ML is the dominant way organisations extract value from it. Architects who cannot reason about data quality, model deployment, vector search, or agent reliability are designing systems that will age poorly. This phase is about building production-grade AI systems, not experimenting in notebooks.",
-    projects: [
-      { level: "INTERMEDIATE", name: "Production Data Pipeline", desc: "End-to-end Airflow/Prefect pipeline: ingest → clean → transform → serve. Implement data quality checks, lineage tracking, and alerting." },
-      { level: "INTERMEDIATE", name: "RAG System with Evaluation", desc: "Build a retrieval-augmented generation system over a large document corpus. Add evals: faithfulness, context precision, answer relevancy." },
-      { level: "ADVANCED", name: "Multi-Agent Research System", desc: "Orchestrate 4+ specialised agents (search, code execution, fact checking, summarisation) to answer complex research questions. Add memory and planning." },
-      { level: "ADVANCED", name: "Cost-Optimised LLM Serving Platform", desc: "Design and implement: request routing (small vs large model), semantic caching, batch inference, streaming, and cost attribution per team." },
-    ],
-    mentalModels: [
-      "Data quality as compound interest: a small schema violation silently corrupts downstream models for months before detection. Validate early and fail loudly.",
-      "LLMs as probabilistic functions: same input → different outputs. Design systems that are robust to this non-determinism rather than fighting it.",
-      "Agents as unreliable contractors: they can do remarkable work but need clear briefs, checkpoints, and the ability to be interrupted and corrected.",
-    ],
-    mistakes: [
-      { title: "Building pipelines without observability", desc: "Data pipelines that fail silently are worse than pipelines that don't run. Instrument everything: row counts, null rates, schema drift." },
-      { title: "Evaluating LLMs only with vibes", desc: "Manual review doesn't scale. Build automated eval harnesses with golden datasets before deploying any LLM in production." },
-      { title: "Ignoring inference cost", desc: "A model that costs $0.01 per request sounds cheap until you have 10M requests/day. Cost modelling is a first-class design concern." },
-      { title: "Agentic systems without human checkpoints", desc: "Autonomous agents that can take irreversible actions without human approval. Define the reversibility boundary clearly and enforce it." },
-    ],
-    resources: [
-      { type: "BOOK", name: "Fundamentals of Data Engineering", sub: "Reis & Housley. The definitive modern data engineering reference." },
-      { type: "BOOK", name: "Designing Machine Learning Systems", sub: "Chip Huyen. Production ML, not research ML." },
-      { type: "BOOK", name: "Building LLMs for Production", sub: "Covers fine-tuning, RAG, evaluation, deployment at scale." },
-      { type: "COURSE", name: "Full Stack Deep Learning", sub: "fullstackdeeplearning.com — production ML systems focus." },
-      { type: "COURSE", name: "Hugging Face NLP Course", sub: "Transformers, embeddings, fine-tuning — hands-on throughout." },
-      { type: "PAPER", name: "Attention Is All You Need (Vaswani et al.)", sub: "Still the foundation. Understand every equation." },
-      { type: "TOOL", name: "MLflow, Weights & Biases, LangSmith", sub: "Learn one experiment tracker and one LLM observability tool deeply." },
-    ],
-    schedule: [
-      { period: "Wk 1–4", task: "Data Engineering Fundamentals book + build the production pipeline project. Set up dbt + Airflow locally." },
-      { period: "Wk 5–8", task: "Designing ML Systems (Huyen). Study feature stores, model registries. Build the RAG system with evals." },
-      { period: "Wk 9–12", task: "LLM internals — attention mechanisms, tokenisation, RLHF. Fine-tune a small model on a custom dataset." },
-      { period: "Mo 4", task: "LLM-Ops tooling: prompt versioning, eval frameworks, cost dashboards. Apply to existing RAG system." },
-      { period: "Mo 5–6", task: "Agentic systems: build multi-agent research system. Add memory, planning, and human-in-the-loop checkpoints." },
-    ],
+    id:5, label:"Phase 5", title:"Data Engineering & AI/ML Systems",
+    subtitle:"Pipelines, Vector DBs, LLM-Ops, Agentic Workflows",
+    duration:"4–6 months", color:{dot:"#7F77DD",light:"#EEEDFE",dark:"#3C3489",mid:"#7F77DD",border:"#534AB7"},
+    why:"Data is now the primary product of most digital systems. Architects who cannot reason about data quality, model deployment, vector search, or agent reliability are designing systems that will age poorly. This phase is about building production-grade AI systems, not experimenting in notebooks.",
+    subjects:[
+      {id:"5-1",label:"5.1 Data Engineering",duration:"4–5 wk",why:"Data pipelines are software systems. They have bugs, they fail, they accumulate technical debt. Treat them like software — with tests, observability, and versioning.",
+        units:[{num:"U1",title:"Data pipeline architecture",week:"Wk 1–2",topics:[{n:"ETL vs ELT",d:"Push vs pull, transformation location"},{n:"Medallion architecture",d:"Bronze/silver/gold — data quality layers"},{n:"dbt & SQL transformations",d:"Version-controlled, tested data transformations"},{n:"Data lineage",d:"Tracking data provenance end-to-end"},{n:"Data quality",d:"Schema validation, null checks, row counts"}],insight:"A pipeline that fails silently is worse than one that doesn't run. Instrument everything: row counts, null rates, schema drift. Fail loudly.",ic:"#3C3489"},{num:"U2",title:"Batch & stream processing",week:"Wk 3–5",topics:[{n:"Apache Airflow / Prefect",d:"DAG orchestration, retries, backfill"},{n:"Apache Spark",d:"RDD vs DataFrame, partition strategy"},{n:"Apache Flink for data engineering",d:"Real-time ETL, CDC"},{n:"Change data capture",d:"Debezium — streaming DB changes to pipelines"}],insight:"CDC (change data capture) is how you stream database changes to data pipelines without polling. Essential for real-time data products.",ic:"#3C3489"}],
+        projects:[{l:"INTERMEDIATE",n:"Production data pipeline",d:"Airflow/Prefect pipeline: ingest→clean→transform→serve. Data quality checks, lineage tracking, alerting."},{l:"ADVANCED",n:"Real-time IoT analytics pipeline",d:"CDC from device DB → Flink transformation → analytical store. Sub-second latency."}],
+        resources:[{t:"BOOK",n:"Fundamentals of Data Engineering — Reis & Housley",s:"The definitive modern data engineering reference."},{t:"TOOL",n:"dbt, Airflow, Spark, Debezium",s:"Learn one orchestrator and one streaming framework deeply."}],
+        schedule:[{p:"Wk 1–2",t:"Fundamentals book + medallion architecture. Set up dbt + Airflow locally. Build pipeline."},{p:"Wk 3–5",t:"Stream processing. Flink + CDC. IoT analytics pipeline."}],
+        mistakes:[{t:"Building pipelines without observability",d:"Silent failures corrupt data for months. Instrument row counts, null rates, schema drift on every stage."},{t:"Not versioning data schemas",d:"Schema changes break downstream consumers silently. Use schema registry."}],
+        mentalModels:["Data quality as compound interest: a small schema violation silently corrupts downstream models for months before detection.","Data pipelines are software. Test them, observe them, version them."]
+      },
+      {id:"5-2",label:"5.2 ML Systems & LLM-Ops",duration:"5–6 wk",why:"Production ML is fundamentally different from research ML. Models drift, data distributions shift, inference costs scale, and evaluation is non-trivial. This subject teaches you to build ML systems that survive contact with production.",
+        units:[{num:"U1",title:"ML model lifecycle",week:"Wk 1–3",topics:[{n:"Feature stores",d:"Point-in-time correct features, online vs offline"},{n:"Experiment tracking",d:"MLflow, Weights & Biases"},{n:"Model registry",d:"Versioning, lineage, approval workflows"},{n:"A/B testing models",d:"Shadow mode, canary, champion/challenger"},{n:"Model monitoring",d:"Data drift, concept drift, prediction drift"}],insight:"Feature stores solve the training-serving skew problem: the most common source of ML bugs in production.",ic:"#3C3489"},{num:"U2",title:"LLM systems & agentic workflows",week:"Wk 3–6",topics:[{n:"RAG architecture",d:"Chunking, embedding, retrieval, reranking"},{n:"Vector databases",d:"HNSW, IVF, PQ compression — ANN algorithms"},{n:"LLM evaluation",d:"Faithfulness, context precision, answer relevancy"},{n:"LLM-Ops",d:"Prompt versioning, cost attribution, semantic caching"},{n:"Agentic systems",d:"Tool use, multi-agent orchestration, memory, planning"},{n:"Cost optimisation",d:"Model routing, batching, speculative decoding"}],insight:"LLMs are probabilistic functions: same input → different outputs. Design systems robust to non-determinism rather than fighting it.",ic:"#3C3489"}],
+        projects:[{l:"INTERMEDIATE",n:"RAG system with evaluation",d:"Build RAG over large document corpus. Add evals: faithfulness, context precision, answer relevancy."},{l:"ADVANCED",n:"Multi-agent research system",d:"4+ specialised agents (search, code, fact-check, summarise). Add memory and planning. Human-in-the-loop."},{l:"ADVANCED",n:"Cost-optimised LLM serving platform",d:"Request routing (small vs large model), semantic caching, batch inference, cost attribution per team."}],
+        resources:[{t:"BOOK",n:"Designing Machine Learning Systems — Chip Huyen",s:"Production ML, not research ML. The definitive reference."},{t:"COURSE",n:"Full Stack Deep Learning",s:"fullstackdeeplearning.com — production ML systems focus."},{t:"PAPER",n:"Attention Is All You Need — Vaswani et al.",s:"Still the foundation. Understand every equation."}],
+        schedule:[{p:"Wk 1–3",t:"ML lifecycle. Feature stores, experiment tracking. RAG system with evals."},{p:"Wk 4–6",t:"LLM-Ops tooling. Multi-agent system. Cost optimisation platform."}],
+        mistakes:[{t:"Evaluating LLMs only with vibes",d:"Manual review doesn't scale. Build automated eval harnesses before deploying any LLM."},{t:"Ignoring inference cost",d:"$0.01/request sounds cheap until you have 10M req/day. Cost modelling is a first-class concern."},{t:"Agents without human checkpoints",d:"Autonomous agents taking irreversible actions without approval. Define the reversibility boundary."}],
+        mentalModels:["Agents as unreliable contractors: remarkable work, but need clear briefs, checkpoints, and the ability to be interrupted.","Training-serving skew: the feature computation at training time and serving time must be identical. Divergence = silent bugs."]
+      },
+    ]
   },
   {
-    id: 6,
-    title: "Reliability, Security & Cost Engineering",
-    subtitle: "Chaos Engineering, Observability, FinOps, Security",
-    duration: "3–4 months",
-    color: { dot: "#BA7517", light: "#faeeda", dark: "#5a3a00", mid: "#BA7517", border: "#854F0B" },
-    concepts: [
-      { name: "Chaos Engineering", note: "Failure injection, game days, blast radius control" },
-      { name: "Observability", note: "Logs, metrics, traces — pillars and correlation" },
-      { name: "SLOs, SLIs, Error Budgets", note: "Reliability as a product feature with a budget" },
-      { name: "FinOps", note: "Cost attribution, reserved instances, rightsizing, waste elimination" },
-      { name: "Security Architecture", note: "Zero-trust, defence in depth, threat modelling (STRIDE)" },
-      { name: "Identity & Auth", note: "OAuth2, OIDC, mTLS, RBAC, ABAC" },
-      { name: "Encryption & Secrets", note: "TLS internals, key management, HSMs, secret rotation" },
-      { name: "Compliance & Governance", note: "SOC2, GDPR, PCI-DSS — design for auditability" },
-    ],
-    why: "Systems that can't be debugged, can't be secured, and can't be afforded don't survive long. This phase transforms an architect from someone who can build systems that work into someone who can build systems that work reliably, safely, and economically — the three qualities that enterprise and production systems ultimately live or die by.",
-    projects: [
-      { level: "INTERMEDIATE", name: "Chaos Engineering Programme", desc: "Set up Chaos Monkey/Gremlin on a test cluster. Define hypothesis, blast radius, and abort conditions. Run 10 experiments. Document learnings." },
-      { level: "INTERMEDIATE", name: "Full-Stack Observability Platform", desc: "Instrument a multi-service application with OpenTelemetry. Build dashboards, set up alerting, correlate logs-metrics-traces across services." },
-      { level: "ADVANCED", name: "Self-Healing Infrastructure", desc: "Design a system where: failed nodes auto-replace, degraded services auto-scale, circuit breakers trip and recover, and on-call is never paged for known failure modes." },
-      { level: "ADVANCED", name: "Cloud Cost Optimisation Audit", desc: "Audit a cloud environment (real or simulated). Identify waste, implement rightsizing, add cost allocation tags. Target: 30% cost reduction without performance regression." },
-    ],
-    mentalModels: [
-      "Reliability as a budget: every system has an error budget (1 - SLO). Spend it deliberately on innovation, not accidentally on incidents.",
-      "Security as concentric rings: assume every ring will be breached eventually. Each inner ring needs its own controls, not just trust from the outer ring.",
-      "Cost as a fifth dimension of performance: a system that is fast, reliable, secure, and scalable but unaffordable is a failed system. Cost is a first-class non-functional requirement.",
-    ],
-    mistakes: [
-      { title: "Testing resilience only in production", desc: "Running chaos experiments for the first time during an actual incident. Game days exist precisely to find failure modes before they find you." },
-      { title: "Alerting on symptoms, not causes", desc: "An alert for every log error generates alert fatigue. Alert on SLO breach (what the user experiences), investigate the cause with observability tools." },
-      { title: "Security as a final gate", desc: "Adding security review as the last step before deployment. Threat modelling must happen at design time, not after architecture is frozen." },
-      { title: "FinOps as a one-time exercise", desc: "Cost optimisation that doesn't include ongoing tagging, budgets, and ownership models will drift back to waste within 6 months." },
-    ],
-    resources: [
-      { type: "BOOK", name: "Site Reliability Engineering (Google)", sub: "The SRE book. Free at sre.google. Chapters 1–15 are essential." },
-      { type: "BOOK", name: "Observability Engineering — Charity Majors", sub: "The definitive guide to structured events, sampling, and tracing." },
-      { type: "BOOK", name: "The DevOps Handbook", sub: "Flow, feedback, and learning. Cultural and technical foundations." },
-      { type: "BOOK", name: "Threat Modeling — Adam Shostack", sub: "STRIDE, attack trees, and threat modelling at design time." },
-      { type: "COURSE", name: "Cloud Provider FinOps Certifications", sub: "AWS Cost Optimisation or Google Cloud FinOps. Hands-on labs required." },
-      { type: "TOOL", name: "OpenTelemetry, Jaeger, Prometheus, Grafana", sub: "Build the full observability stack yourself at least once." },
-    ],
-    schedule: [
-      { period: "Wk 1–3", task: "SRE book chapters 1–15. Define SLOs for existing projects. Set up error budget dashboards." },
-      { period: "Wk 4–6", task: "OpenTelemetry instrumentation project. Correlate logs, metrics, traces. Build alerting hierarchy." },
-      { period: "Wk 7–9", task: "Chaos engineering programme: design, run, analyse 10 experiments. Write blameless post-mortems." },
-      { period: "Wk 10–11", task: "Security: threat model 3 existing system designs using STRIDE. Fix the top 5 findings per system." },
-      { period: "Wk 12–16", task: "FinOps: cloud cost audit project. Rightsizing, tagging, reserved instances analysis. Present savings plan." },
-    ],
+    id:6, label:"Phase 6", title:"Reliability, Security & Cost Engineering",
+    subtitle:"Chaos Engineering, Observability, FinOps, Security",
+    duration:"3–4 months", color:{dot:"#BA7517",light:"#FAEEDA",dark:"#633806",mid:"#BA7517",border:"#854F0B"},
+    why:"Systems that can't be debugged, can't be secured, and can't be afforded don't survive long. This phase transforms an architect from someone who builds systems that work into someone who builds systems that work reliably, safely, and economically.",
+    subjects:[
+      {id:"6-1",label:"6.1 Observability",duration:"3–4 wk",why:"You cannot debug a distributed system you cannot observe. Observability is the practice of designing systems so that their internal state can be inferred from their external outputs.",
+        units:[{num:"U1",title:"Three pillars",week:"Wk 1–2",topics:[{n:"Structured logging",d:"Log as events, not strings — JSON with context"},{n:"Metrics & time series",d:"Counter, gauge, histogram, summary"},{n:"Distributed tracing",d:"Trace IDs, span relationships, sampling"},{n:"OpenTelemetry",d:"Vendor-neutral instrumentation standard"}],insight:"Logs, metrics, and traces answer different questions. Metrics: is something wrong? Logs: what happened? Traces: where did latency come from?",ic:"#633806"},{num:"U2",title:"SLOs & alerting",week:"Wk 2–4",topics:[{n:"SLI, SLO, SLA definitions",d:"What to measure and at what threshold"},{n:"Error budgets",d:"How to spend them deliberately"},{n:"Alert on symptoms, not causes",d:"SLO breach alerting vs log error alerting"},{n:"Dashboards that matter",d:"The four golden signals: latency, traffic, errors, saturation"}],insight:"Alert on SLO breach (what the user experiences). Investigate the cause with observability tools. Never alert on individual log errors.",ic:"#633806"}],
+        projects:[{l:"INTERMEDIATE",n:"Full-stack observability platform",d:"OpenTelemetry on multi-service app. Dashboards, alerting, correlate logs-metrics-traces."},{l:"ADVANCED",n:"SLO-based alerting system",d:"Define SLOs for 3 services. Build error budget dashboards. Implement burn rate alerting."}],
+        resources:[{t:"BOOK",n:"Observability Engineering — Charity Majors",s:"The definitive guide to structured events, sampling, tracing."},{t:"BOOK",n:"Site Reliability Engineering (Google)",s:"Free at sre.google. Chapters 1–15 essential."},{t:"TOOL",n:"OpenTelemetry, Jaeger, Prometheus, Grafana",s:"Build the full stack yourself at least once."}],
+        schedule:[{p:"Wk 1–2",t:"OpenTelemetry instrumentation. Logs + metrics + traces on existing project."},{p:"Wk 3–4",t:"SLOs: define for 3 services. Error budget dashboards. Burn rate alerting."}],
+        mistakes:[{t:"Alerting on every log error",d:"This generates alert fatigue. Alert on SLO breach, investigate with logs."},{t:"Tracing without sampling strategy",d:"100% trace sampling will bankrupt your storage budget at scale. Implement head-based or tail-based sampling."}],
+        mentalModels:["Reliability as a budget: every system has an error budget (1 - SLO). Spend it deliberately on innovation, not accidentally on incidents.","Four golden signals: latency, traffic, errors, saturation. Dashboard these for every service you own."]
+      },
+      {id:"6-2",label:"6.2 Chaos Engineering",duration:"2–3 wk",why:"Chaos engineering is the practice of experimenting on a system to build confidence in its ability to withstand turbulent conditions. Systems that aren't tested for failure will fail unexpectedly in production.",
+        units:[{num:"U1",title:"Chaos engineering principles",week:"Wk 1–2",topics:[{n:"Hypothesis-driven experiments",d:"Steady state, hypothesis, blast radius, abort"},{n:"Failure injection types",d:"Network latency, partition, resource exhaustion, node kill"},{n:"Game days",d:"Planned failure exercises with the full team"},{n:"Chaos Monkey & Gremlin",d:"Tooling for automated failure injection"}],insight:"Running chaos experiments for the first time during an actual incident is too late. Game days exist to find failure modes before they find you.",ic:"#633806"},{num:"U2",title:"Self-healing systems",week:"Wk 2–3",topics:[{n:"Auto-scaling policies",d:"CPU-based vs custom metrics"},{n:"Circuit breaker automation",d:"Automatic trip and reset"},{n:"Health checks & readiness",d:"Kubernetes liveness vs readiness probes"},{n:"Runbooks as code",d:"Automated remediation of known failure modes"}],insight:"The goal is that on-call is never paged for a failure mode you've seen before. Automate every known recovery.",ic:"#633806"}],
+        projects:[{l:"INTERMEDIATE",n:"Chaos engineering programme",d:"Set up Chaos Monkey on test cluster. 10 experiments with hypothesis, blast radius, abort conditions. Document learnings."},{l:"ADVANCED",n:"Self-healing infrastructure",d:"Failed nodes auto-replace, services auto-scale, circuit breakers trip/recover, no pages for known failures."}],
+        resources:[{t:"BOOK",n:"Chaos Engineering — Basiri et al.",s:"O'Reilly. The definitive reference by Netflix's chaos engineers."},{t:"TOOL",n:"Chaos Monkey, Gremlin, Litmus",s:"Pick one and run real experiments."}],
+        schedule:[{p:"Wk 1",t:"Chaos principles. Design and run 5 experiments. Write blameless post-mortems."},{p:"Wk 2–3",t:"Self-healing patterns. Automated circuit breakers. Runbook automation."}],
+        mistakes:[{t:"Chaos in production without a steady state baseline",d:"You can't tell if chaos had an effect if you don't know what normal looks like."},{t:"Skipping the abort condition",d:"Every chaos experiment must have a pre-defined abort trigger. This is non-negotiable."}],
+        mentalModels:["Chaos engineering is not breaking things — it's building confidence through controlled experiments.","Every incident post-mortem that ends with 'we didn't know this could happen' is an argument for more chaos testing."]
+      },
+      {id:"6-3",label:"6.3 Security Architecture",duration:"3–4 wk",why:"Security added as a final gate doesn't work. Threat modelling at design time, defence in depth, and zero-trust networking are the principles that make systems survivable.",
+        units:[{num:"U1",title:"Threat modelling",week:"Wk 1",topics:[{n:"STRIDE framework",d:"Spoofing, Tampering, Repudiation, Info Disclosure, DoS, Elevation"},{n:"Attack trees",d:"Systematic threat enumeration"},{n:"Data flow diagrams",d:"Trust boundaries, data stores, external entities"}],insight:"Threat modelling must happen at design time, not after architecture is frozen. Schedule it immediately after the initial design doc.",ic:"#633806"},{num:"U2",title:"Auth, encryption & zero-trust",week:"Wk 2–4",topics:[{n:"OAuth2 & OIDC",d:"Authorisation vs authentication flows"},{n:"mTLS & service identity",d:"SPIFFE/SPIRE for service-to-service auth"},{n:"TLS internals",d:"Cipher suites, certificate chains, HSTS"},{n:"Secret management",d:"Vault, KMS, rotation — never hardcode credentials"},{n:"Zero-trust networking",d:"BeyondCorp model — verify every request"}],insight:"The BeyondCorp model: never trust the network, always verify the identity. Every internal request is treated as coming from the public internet.",ic:"#633806"}],
+        projects:[{l:"INTERMEDIATE",n:"Threat model — 3 system designs",d:"Apply STRIDE to 3 existing designs. Fix top 5 findings per system."},{l:"ADVANCED",n:"Zero-trust service mesh",d:"mTLS between all services using SPIFFE/SPIRE. Secret rotation via Vault. Audit log every auth decision."}],
+        resources:[{t:"BOOK",n:"Threat Modeling — Adam Shostack",s:"STRIDE, attack trees, threat modelling at design time."},{t:"BOOK",n:"Designing Secure Software — Loren Kohnfelder",s:"Practical security engineering from an ex-Google engineer."}],
+        schedule:[{p:"Wk 1",t:"STRIDE threat model on 3 existing projects. Find and fix 5 issues each."},{p:"Wk 2–3",t:"OAuth2 + OIDC deep dive. mTLS setup. Secret rotation via Vault."},{p:"Wk 4",t:"Zero-trust service mesh project."}],
+        mistakes:[{t:"Security as a final gate",d:"Adding security review as the last step before deployment. Threat modelling must happen at design time."},{t:"Storing secrets in environment variables",d:"Environment variables leak via process listings and debug endpoints. Use a proper secrets manager."}],
+        mentalModels:["Security as concentric rings: assume every ring will be breached. Each inner ring needs its own controls, not just trust from the outer ring.","Zero trust: the network is always hostile. Verify identity, not location."]
+      },
+      {id:"6-4",label:"6.4 FinOps & Cost Engineering",duration:"2–3 wk",why:"Cost is a fifth dimension of performance. A system that is fast, reliable, secure, and scalable but unaffordable is a failed system. FinOps is the discipline of managing cloud costs with engineering rigour.",
+        units:[{num:"U1",title:"Cloud cost fundamentals",week:"Wk 1",topics:[{n:"Cloud pricing models",d:"On-demand vs reserved vs spot vs savings plans"},{n:"Cost attribution",d:"Tagging strategy, cost allocation tags"},{n:"Right-sizing",d:"CPU and memory utilisation analysis"},{n:"Idle resource detection",d:"Unattached volumes, unused IPs, zombie services"}],insight:"Most cloud waste is invisible: unattached EBS volumes, idle load balancers, over-provisioned RDS instances. Audit everything.",ic:"#633806"},{num:"U2",title:"Cost optimisation architecture",week:"Wk 2–3",topics:[{n:"Spot instance patterns",d:"Spot + auto-scaling, interruption handling"},{n:"Data transfer costs",d:"Egress is almost always the surprise bill"},{n:"Storage tier optimisation",d:"S3 lifecycle policies, Glacier, Intelligent Tiering"},{n:"Compute optimisation",d:"Graviton instances, ARM savings, serverless for bursty loads"}],insight:"Data egress costs are the silent budget killer. Architectures that cross availability zone or region boundaries more than necessary pay dearly.",ic:"#633806"}],
+        projects:[{l:"INTERMEDIATE",n:"Cloud cost audit",d:"Audit a real or simulated cloud environment. Identify waste, right-size, add tags. Target: 30% reduction."},{l:"ADVANCED",n:"FinOps dashboard",d:"Cost per team, per service, per feature. Anomaly detection. Budget alerts. Connected to actual cloud billing API."}],
+        resources:[{t:"BOOK",n:"Cloud FinOps — Storment & Fuller",s:"The definitive FinOps reference. O'Reilly."},{t:"COURSE",n:"AWS Cost Optimisation or GCP FinOps certifications",s:"Hands-on labs required."}],
+        schedule:[{p:"Wk 1",t:"Cloud cost fundamentals. Audit existing environment. Tag everything."},{p:"Wk 2–3",t:"Optimisation: spot instances, storage tiers, right-sizing. FinOps dashboard."}],
+        mistakes:[{t:"FinOps as a one-time exercise",d:"Without ongoing tagging, budgets, and ownership, costs drift back to waste within 6 months."},{t:"Ignoring egress costs in architecture",d:"Route traffic within the same AZ when possible. Cross-AZ egress is surprisingly expensive."}],
+        mentalModels:["Cost as a fifth dimension of performance: treat it as a first-class non-functional requirement from day one.","Every engineer should see the cost of the services they own. Cost visibility changes behaviour."]
+      },
+    ]
   },
   {
-    id: 7,
-    title: "Future Computing Paradigms",
-    subtitle: "Quantum, Edge, Bio-Computing, Next-Gen AI Systems",
-    duration: "Ongoing",
-    color: { dot: "#888780", light: "#F1EFE8", dark: "#2c2c2a", mid: "#888780", border: "#5F5E5A" },
-    concepts: [
-      { name: "Quantum Computing Foundations", note: "Qubits, superposition, entanglement, quantum gates" },
-      { name: "Quantum Algorithms", note: "Shor's, Grover's — threat to classical crypto" },
-      { name: "Post-Quantum Cryptography", note: "NIST PQC standards — plan migration now" },
-      { name: "Edge Computing Architecture", note: "Latency-driven computation placement, federated inference" },
-      { name: "Neuromorphic Computing", note: "Intel Loihi, event-driven spike networks" },
-      { name: "Bio-Computing Concepts", note: "DNA storage, molecular computation — 10-50 year horizon" },
-      { name: "Foundation Model Infrastructure", note: "Training at trillion-parameter scale, RLHF, constitutional AI" },
-      { name: "Emergent System Design", note: "Systems that learn, adapt, and self-organise" },
-    ],
-    why: "The architect who only designs for today's technology stack will be obsolete in a decade. This phase is about maintaining a 10–50 year horizon alongside the operational present. You're not expected to master quantum mechanics — but you should understand which parts of your current architecture will break when quantum computers become practical, and have a migration plan ready.",
-    projects: [
-      { level: "EXPLORATION", name: "Quantum Circuit Simulation", desc: "Use Qiskit to implement Grover's search algorithm on a simulator. Understand the speedup and why it matters for database search at scale." },
-      { level: "EXPLORATION", name: "Post-Quantum Cryptography Migration Plan", desc: "Audit an existing system's cryptographic assumptions. Identify RSA/ECC dependencies. Design the migration path to NIST PQC standards." },
-      { level: "EXPLORATION", name: "Edge AI System Design", desc: "Design a federated learning system for IoT devices: model compression, communication-efficient aggregation, privacy preservation." },
-      { level: "VISION", name: "50-Year Architecture Essay", desc: "Write a serious 5,000-word essay on what computing infrastructure will look like in 2075. Defend your assumptions. Revisit and revise annually." },
-    ],
-    mentalModels: [
-      "Technology adoption as an S-curve: quantum computing is at the research phase of the S-curve. Plan as if it will matter in 15 years, not 3 — but plan now.",
-      "Edge as the return of local computing: the centralisation trend (mainframe → PC → cloud) is reversing again. Intelligence is moving to the edge for latency and sovereignty reasons.",
-      "Biology as the long-term hardware: DNA stores 215 petabytes per gram and persists for millennia. The question isn't if bio-computing matters, but when.",
-    ],
-    mistakes: [
-      { title: "Dismissing quantum as 'not ready yet'", desc: "Shor's algorithm breaks RSA. When quantum computers are powerful enough, systems encrypted today are retroactively broken ('harvest now, decrypt later'). The migration is urgent." },
-      { title: "Treating edge computing as 'just smaller cloud'", desc: "Edge introduces fundamentally different constraints: intermittent connectivity, heterogeneous hardware, local privacy requirements. Cloud-native patterns don't translate." },
-      { title: "AI exceptionalism", desc: "Believing the current generation of LLMs represents the final form of AI. History suggests otherwise. Design systems that can incorporate future AI capabilities, not ones coupled to today's APIs." },
-      { title: "Horizon blindness", desc: "Being so focused on quarterly delivery that no investment is made in understanding 10-year technology shifts. Reserve 10% of your learning time for this phase, always." },
-    ],
-    resources: [
-      { type: "BOOK", name: "Quantum Computing: An Applied Approach", sub: "Hidary. Best bridge between theory and implementation with Qiskit." },
-      { type: "BOOK", name: "The Coming Wave — Mustafa Suleyman", sub: "Broad technology horizon. Read critically." },
-      { type: "PAPER", name: "NIST Post-Quantum Cryptography Standards", sub: "csrc.nist.gov. Understand CRYSTALS-Kyber and CRYSTALS-Dilithium." },
-      { type: "COURSE", name: "IBM Quantum Learning (quantum.ibm.com)", sub: "Free. Run circuits on real quantum hardware." },
-      { type: "COURSE", name: "MIT 6.S192 / Quera Education Resources", sub: "Academic depth on quantum algorithms and error correction." },
-      { type: "PRACTICE", name: "Write one long-horizon essay per quarter", sub: "Force yourself to reason about 10–50 year system implications. The discipline matters more than the conclusions." },
-    ],
-    schedule: [
-      { period: "Mo 1–2", task: "Quantum fundamentals: Qiskit textbook chapters 1–5. Implement Grover's on simulator. Understand why it matters for search." },
-      { period: "Mo 3", task: "Post-quantum cryptography: NIST standards deep dive. Produce the PQC migration plan for an existing project." },
-      { period: "Mo 4–5", task: "Edge computing architecture: design the federated learning system. Study TinyML and model compression techniques." },
-      { period: "Ongoing", task: "Monthly: one research paper from arxiv.org (cs.ET or quant-ph). Quarterly: one long-horizon essay. Annual: revise the 50-year architecture essay." },
-    ],
+    id:7, label:"Phase 7", title:"Future Computing Paradigms",
+    subtitle:"Quantum, Edge, Bio-Computing, Next-Gen AI",
+    duration:"Ongoing", color:{dot:"#888780",light:"#F1EFE8",dark:"#444441",mid:"#888780",border:"#5F5E5A"},
+    why:"The architect who only designs for today's technology stack will be obsolete in a decade. This phase is about maintaining a 10–50 year horizon alongside the operational present. Reserve 10% of your weekly learning time for this permanently.",
+    subjects:[
+      {id:"7-1",label:"7.1 Quantum Computing",duration:"2–3 mo",why:"Shor's algorithm breaks RSA when quantum computers become powerful enough. 'Harvest now, decrypt later' attacks are already happening. The migration to post-quantum cryptography is urgent, even though quantum computers aren't yet powerful enough to threaten RSA.",
+        units:[{num:"U1",title:"Quantum fundamentals",week:"Mo 1",topics:[{n:"Qubits & superposition",d:"Bloch sphere, quantum state"},{n:"Entanglement",d:"EPR pairs, Bell states"},{n:"Quantum gates",d:"H, CNOT, Toffoli — quantum circuit model"},{n:"Quantum interference",d:"Amplifying right answers, cancelling wrong ones"}],insight:"Quantum speedup comes from interference: the algorithm is designed so correct answers amplify and wrong answers cancel. Not magic — math.",ic:"#444441"},{num:"U2",title:"Quantum algorithms & PQC",week:"Mo 2–3",topics:[{n:"Grover's algorithm",d:"O(√N) database search"},{n:"Shor's algorithm",d:"O(log³N) factoring — breaks RSA"},{n:"Post-quantum cryptography",d:"NIST PQC standards: CRYSTALS-Kyber, Dilithium"},{n:"PQC migration planning",d:"Cryptographic agility, harvest-now-decrypt-later"}],insight:"Systems encrypted today can be harvested and decrypted later when quantum computers are powerful enough. The migration is urgent, not hypothetical.",ic:"#444441"}],
+        projects:[{l:"EXPLORATION",n:"Quantum circuit simulation",d:"Use Qiskit to implement Grover's search on a simulator. Understand the speedup and why it matters for database search."},{l:"EXPLORATION",n:"PQC migration plan",d:"Audit an existing system's cryptographic assumptions. Identify RSA/ECC dependencies. Design migration to NIST PQC standards."}],
+        resources:[{t:"BOOK",n:"Quantum Computing: An Applied Approach — Hidary",s:"Best bridge between theory and implementation with Qiskit."},{t:"COURSE",n:"IBM Quantum Learning (quantum.ibm.com)",s:"Free. Run circuits on real quantum hardware."},{t:"PAPER",n:"NIST PQC Standards",s:"csrc.nist.gov. Read the CRYSTALS-Kyber and Dilithium specs."}],
+        schedule:[{p:"Mo 1",t:"Quantum fundamentals: Qiskit textbook ch. 1–5. Implement Grover's on simulator."},{p:"Mo 2",t:"Shor's algorithm. PQC deep dive. NIST standards. Design PQC migration plan."},{p:"Ongoing",t:"Monthly: one paper from arxiv.org quant-ph. Track hardware progress."}],
+        mistakes:[{t:"Dismissing quantum as 'not ready'",d:"Harvest-now-decrypt-later attacks are already happening. The migration timeline is now, not when quantum computers are ready."},{t:"Ignoring cryptographic agility",d:"Systems that hard-code TLS cipher suites can't be migrated quickly. Design for algorithm substitution."}],
+        mentalModels:["Technology adoption as an S-curve: quantum computing is at the research phase. Plan as if it matters in 15 years — but plan now.","Cryptographic agility: treat the crypto algorithm as a parameter, not a constant."]
+      },
+      {id:"7-2",label:"7.2 Edge & Emerging Architectures",duration:"Ongoing",why:"The centralisation trend (mainframe → PC → cloud) is reversing. Intelligence is moving to the edge for latency, sovereignty, and bandwidth cost reasons. IoT architects are already building at the edge — this formalises the patterns.",
+        units:[{num:"U1",title:"Edge computing architecture",week:"Mo 1–2",topics:[{n:"Edge vs cloud computation placement",d:"Latency-driven decisions"},{n:"Federated learning",d:"Train on device, aggregate centrally"},{n:"TinyML & model compression",d:"Quantisation, pruning, knowledge distillation"},{n:"Edge-cloud synchronisation",d:"Offline-first design, conflict resolution"}],insight:"Your IoT startup is already building edge-native systems. Federated learning lets you train ML models on device data without centralising private sensor readings.",ic:"#444441"},{num:"U2",title:"Neuromorphic & bio-computing",week:"Exploration",topics:[{n:"Neuromorphic chips",d:"Intel Loihi, event-driven spike networks"},{n:"DNA data storage",d:"215 petabytes per gram, millennia persistence"},{n:"Molecular computation",d:"DNA computing for combinatorial problems"},{n:"Optical computing",d:"Photonic processors for AI inference"}],insight:"DNA storage stores 215 petabytes per gram and persists for thousands of years. The question isn't if bio-computing matters — it's when.",ic:"#444441"}],
+        projects:[{l:"EXPLORATION",n:"Federated learning system",d:"Design: model compression, communication-efficient aggregation, privacy preservation for IoT devices."},{l:"VISION",n:"50-year architecture essay",d:"5,000-word serious essay on computing infrastructure in 2075. Defend assumptions. Revisit and revise annually."}],
+        resources:[{t:"BOOK",n:"The Coming Wave — Mustafa Suleyman",s:"Broad technology horizon. Read critically."},{t:"PAPER",n:"Communication-Efficient Learning (McMahan et al.)",s:"The federated learning paper. Directly applicable to IoT."},{t:"PRACTICE",n:"One long-horizon essay per quarter",s:"Force yourself to reason about 10–50 year implications. The discipline matters more than conclusions."}],
+        schedule:[{p:"Mo 1–2",t:"Edge architecture: federated learning design. TinyML compression techniques."},{p:"Ongoing",t:"Monthly: one arxiv.org paper (cs.ET). Quarterly: long-horizon essay. Annual: revise the 50-year architecture essay."}],
+        mistakes:[{t:"Treating edge as 'just smaller cloud'",d:"Edge introduces fundamentally different constraints: intermittent connectivity, heterogeneous hardware, local privacy. Cloud-native patterns don't translate."},{t:"AI exceptionalism",d:"Current LLMs are not the final form of AI. Design systems that can incorporate future capabilities, not ones coupled to today's APIs."}],
+        mentalModels:["Edge as the return of local computing: the centralisation trend is reversing for latency and sovereignty reasons.","10% rule: permanently reserve 10% of your learning time for horizon scanning. This is not optional."]
+      },
+    ]
   },
 ];
 
-const levelColors = {
-  STARTER:     { bg: "#e1f5ee", color: "#0F6E56" },
-  INTERMEDIATE:{ bg: "#e8f1fa", color: "#185FA5" },
-  ADVANCED:    { bg: "#fbeaf0", color: "#993556" },
-  EXPLORATION: { bg: "#EEEDFE", color: "#534AB7" },
-  VISION:      { bg: "#F1EFE8", color: "#5F5E5A" },
-};
+let state = {phase: 1, view: 'phase', subjectId: null, tab: {}};
 
-function buildNav() {
-  const nav = document.getElementById('phase-nav');
-  const bar = document.getElementById('progress-bar');
-  phases.forEach((ph, i) => {
-    const pill = document.createElement('button');
-    pill.className = 'nav-pill';
-    pill.textContent = `${ph.id}. ${ph.title.split(' ').slice(0,2).join(' ')}`;
-    pill.style.color = ph.color.dark;
-    pill.style.borderColor = ph.color.mid;
-    pill.style.background = ph.color.light;
-    pill.onclick = () => {
-      document.getElementById(`phase-${ph.id}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-    nav.appendChild(pill);
+function phaseColor(id) { return PH.find(p=>p.id===id).color; }
 
-    const seg = document.createElement('div');
-    seg.className = 'progress-seg';
-    seg.id = `seg-${ph.id}`;
-    seg.style.background = ph.color.mid;
-    seg.style.opacity = '0.25';
-    bar.appendChild(seg);
+function buildPills() {
+  const c = document.getElementById('phase-pills');
+  PH.forEach(ph => {
+    const btn = document.createElement('button');
+    btn.className = 'pp';
+    btn.id = 'pp-'+ph.id;
+    btn.textContent = ph.label;
+    btn.style.color = ph.color.dark;
+    btn.style.borderColor = ph.color.mid;
+    btn.onclick = () => selectPhase(ph.id);
+    c.appendChild(btn);
   });
 }
 
-function buildPhases() {
-  const container = document.getElementById('phases-container');
-  phases.forEach(ph => {
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = '';
+  PH.forEach(ph => {
+    const block = document.createElement('div');
+    block.className = 'sb-phase';
+    block.id = 'sbph-'+ph.id;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'sb-phase-hdr';
+    hdr.innerHTML = `<div class="sb-dot" style="background:${ph.color.dot}"></div><div class="sb-phase-name">${ph.label}: ${ph.title}</div><span class="sb-chev">▶</span>`;
+    hdr.onclick = () => toggleSbPhase(ph.id);
+
+    const subjects = document.createElement('div');
+    subjects.className = 'sb-subjects';
+    subjects.id = 'sbsubj-'+ph.id;
+
+    ph.subjects.forEach(s => {
+      const item = document.createElement('div');
+      item.className = 'sb-subj';
+      item.id = 'sbitem-'+s.id;
+      item.textContent = s.label;
+      item.onclick = (e) => { e.stopPropagation(); selectSubject(ph.id, s.id); };
+      subjects.appendChild(item);
+    });
+
+    block.appendChild(hdr);
+    block.appendChild(subjects);
+    sb.appendChild(block);
+  });
+}
+
+function toggleSbPhase(phId) {
+  const block = document.getElementById('sbph-'+phId);
+  const isOpen = block.classList.contains('open');
+  document.querySelectorAll('.sb-phase').forEach(b => b.classList.remove('open'));
+  if (!isOpen) {
+    block.classList.add('open');
+    selectPhase(phId);
+  }
+}
+
+function selectPhase(phId) {
+  state.phase = phId;
+  state.view = 'phase';
+  state.subjectId = null;
+
+  document.querySelectorAll('.pp').forEach(b => {
+    const id = parseInt(b.id.replace('pp-',''));
+    const ph = PH.find(p=>p.id===id);
+    b.style.background = id === phId ? ph.color.light : 'transparent';
+    b.style.fontWeight = id === phId ? '500' : '400';
+  });
+
+  document.querySelectorAll('.sb-subj').forEach(el => el.classList.remove('active'));
+
+  const block = document.getElementById('sbph-'+phId);
+  if (!block.classList.contains('open')) {
+    document.querySelectorAll('.sb-phase').forEach(b => b.classList.remove('open'));
+    block.classList.add('open');
+  }
+
+  renderMain();
+}
+
+function selectSubject(phId, subjId) {
+  state.phase = phId;
+  state.view = 'subject';
+  state.subjectId = subjId;
+
+  selectPhase(phId);
+  state.view = 'subject';
+  state.subjectId = subjId;
+
+  document.querySelectorAll('.sb-subj').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('sbitem-'+subjId);
+  if (el) {
+    el.classList.add('active');
+    el.style.color = phaseColor(phId).mid;
+  }
+
+  renderMain();
+}
+
+function renderMain() {
+  const m = document.getElementById('main');
+  m.innerHTML = '';
+  if (state.view === 'phase') renderPhaseView(m);
+  else renderSubjectView(m);
+}
+
+function renderPhaseView(m) {
+  const ph = PH.find(p=>p.id===state.phase);
+  const col = ph.color;
+
+  const hdr = document.createElement('div');
+  hdr.className = 'ph-header';
+  hdr.innerHTML = `<div class="ph-title">${ph.label}: ${ph.title}</div><div class="ph-meta">${ph.subtitle} · ${ph.duration}</div>`;
+  m.appendChild(hdr);
+
+  const why = document.createElement('div');
+  why.className = 'ph-why';
+  why.textContent = ph.why;
+  m.appendChild(why);
+
+  const g = document.createElement('div');
+  g.className = 'subj-grid';
+  ph.subjects.forEach(s => {
     const card = document.createElement('div');
-    card.className = 'phase-card';
-    card.id = `phase-${ph.id}`;
+    card.className = 'subj-card';
+    card.innerHTML = `<div class="sc-num" style="color:${col.mid}">${s.label}</div><div class="sc-name">${s.label.split(' ').slice(1).join(' ')}</div><div class="sc-dur">${s.duration}</div>`;
+    card.onclick = () => selectSubject(ph.id, s.id);
+    g.appendChild(card);
+  });
+  m.appendChild(g);
 
-    const dot = document.createElement('div');
-    dot.className = 'phase-dot';
-    dot.style.background = ph.color.dot;
-    dot.onclick = () => toggleCard(card, ph.id);
-    card.appendChild(dot);
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size:11px;color:var(--color-text-tertiary);margin-top:4px';
+  hint.textContent = 'Click any subject card or sidebar item to open its full syllabus.';
+  m.appendChild(hint);
+}
 
-    const header = document.createElement('div');
-    header.className = 'phase-header';
-    header.innerHTML = `
-      <span class="phase-num" style="background:${ph.color.light};color:${ph.color.dark};border:0.5px solid ${ph.color.mid}">Phase ${ph.id}</span>
-      <div class="phase-title-block">
-        <div class="phase-title">${ph.title}</div>
-        <div class="phase-subtitle">${ph.subtitle}</div>
-      </div>
-      <span class="phase-duration">${ph.duration}</span>
-      <span class="phase-chevron">▶</span>
-    `;
-    header.onclick = () => toggleCard(card, ph.id);
-    card.appendChild(header);
+function renderSubjectView(m) {
+  const ph = PH.find(p=>p.id===state.phase);
+  const s = ph.subjects.find(x=>x.id===state.subjectId);
+  const col = ph.color;
+  const TABS = ['Units','Projects','Resources','Schedule','Mistakes','Mental Models'];
+  if (!state.tab[s.id]) state.tab[s.id] = 0;
+
+  const bc = document.createElement('div');
+  bc.className = 'breadcrumb';
+  bc.innerHTML = `<span onclick="selectPhase(${ph.id})">${ph.label}: ${ph.title}</span> / ${s.label}`;
+  m.appendChild(bc);
+
+  const titleBar = document.createElement('div');
+  titleBar.className = 'subj-title-bar';
+  titleBar.innerHTML = `<div class="subj-title">${s.label.split(' ').slice(1).join(' ')}</div><span class="subj-dur-badge" style="background:${col.light};color:${col.dark}">${s.duration}</span>`;
+  m.appendChild(titleBar);
+
+  const why = document.createElement('div');
+  why.className = 'ph-why';
+  why.style.marginBottom = '1rem';
+  why.textContent = s.why;
+  m.appendChild(why);
+
+  const tabsEl = document.createElement('div');
+  tabsEl.className = 'section-tabs';
+
+  const panelWrap = document.createElement('div');
+
+  TABS.forEach((name, ti) => {
+    const btn = document.createElement('button');
+    btn.className = 'stab' + (ti===state.tab[s.id]?' on':'');
+    btn.style.borderBottomColor = ti===state.tab[s.id] ? col.mid : 'transparent';
+    btn.textContent = name;
+    btn.onclick = () => {
+      state.tab[s.id] = ti;
+      tabsEl.querySelectorAll('.stab').forEach((b,bi) => {
+        b.classList.toggle('on', bi===ti);
+        b.style.borderBottomColor = bi===ti ? col.mid : 'transparent';
+      });
+      panelWrap.querySelectorAll('.panel').forEach((p,pi) => p.classList.toggle('on', pi===ti));
+    };
+    tabsEl.appendChild(btn);
+  });
+  m.appendChild(tabsEl);
+
+  const panels = TABS.map((_,ti) => {
+    const p = document.createElement('div');
+    p.className = 'panel' + (ti===state.tab[s.id]?' on':'');
+    panelWrap.appendChild(p);
+    return p;
+  });
+
+  // Units
+  (s.units||[]).forEach(u => {
+    const card = document.createElement('div');
+    card.className = 'unit-card';
+    const num = document.createElement('span');
+    num.className = 'u-num';
+    num.style.background = col.light;
+    num.style.color = col.dark;
+    num.textContent = u.num;
+    const hdr = document.createElement('div');
+    hdr.className = 'unit-hdr';
+    hdr.appendChild(num);
+    hdr.innerHTML += `<span class="u-title">${u.title}</span><span class="u-week">${u.week}</span><span class="u-chev">▶</span>`;
+    hdr.onclick = () => card.classList.toggle('open');
+    card.appendChild(hdr);
 
     const body = document.createElement('div');
-    body.className = 'phase-body';
-
-    const tabs = ['Concepts', 'Why it matters', 'Projects', 'Mental models', 'Mistakes', 'Resources', 'Schedule'];
-    const tabsDiv = document.createElement('div');
-    tabsDiv.className = 'section-tabs';
-
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'tab-content';
-
-    tabs.forEach((tab, ti) => {
-      const btn = document.createElement('button');
-      btn.className = 'tab-btn' + (ti === 0 ? ' active' : '');
-      btn.textContent = tab;
-      btn.style.borderBottomColor = ti === 0 ? ph.color.mid : 'transparent';
-      btn.onclick = () => {
-        tabsDiv.querySelectorAll('.tab-btn').forEach((b, bi) => {
-          b.classList.toggle('active', bi === ti);
-          b.style.borderBottomColor = bi === ti ? ph.color.mid : 'transparent';
-        });
-        contentDiv.querySelectorAll('.tab-panel').forEach((p, pi) => {
-          p.classList.toggle('active', pi === ti);
-        });
-      };
-      tabsDiv.appendChild(btn);
+    body.className = 'unit-body';
+    const tg = document.createElement('div');
+    tg.className = 'topic-grid';
+    (u.topics||[]).forEach(t => {
+      tg.innerHTML += `<div class="topic-chip"><div class="tc-name">${t.n}</div><div class="tc-note">${t.d}</div></div>`;
     });
-
-    // Concepts panel
-    const conceptsPanel = document.createElement('div');
-    conceptsPanel.className = 'tab-panel active';
-    let cHtml = '<div class="concept-grid">';
-    ph.concepts.forEach(c => {
-      cHtml += `<div class="concept-chip">${c.name}<span>${c.note}</span></div>`;
-    });
-    cHtml += '</div>';
-    conceptsPanel.innerHTML = cHtml;
-
-    // Why panel
-    const whyPanel = document.createElement('div');
-    whyPanel.className = 'tab-panel';
-    whyPanel.innerHTML = `<div class="why-matters">${ph.why}</div>`;
-
-    // Projects panel
-    const projPanel = document.createElement('div');
-    projPanel.className = 'tab-panel';
-    ph.projects.forEach(p => {
-      const lc = levelColors[p.level] || levelColors.STARTER;
-      projPanel.innerHTML += `
-        <div class="project-item">
-          <span class="project-level" style="background:${lc.bg};color:${lc.color}">${p.level}</span>
-          <div class="project-name">${p.name}</div>
-          <div class="project-desc">${p.desc}</div>
-        </div>`;
-    });
-
-    // Mental models panel
-    const mmPanel = document.createElement('div');
-    mmPanel.className = 'tab-panel';
-    ph.mentalModels.forEach(mm => {
-      mmPanel.innerHTML += `<div class="mental-model">${mm}</div>`;
-    });
-
-    // Mistakes panel
-    const mistakesPanel = document.createElement('div');
-    mistakesPanel.className = 'tab-panel';
-    ph.mistakes.forEach(m => {
-      mistakesPanel.innerHTML += `
-        <div class="mistake-item">
-          <div class="mistake-icon">!</div>
-          <div class="mistake-text"><strong>${m.title}:</strong> ${m.desc}</div>
-        </div>`;
-    });
-
-    // Resources panel
-    const resPanel = document.createElement('div');
-    resPanel.className = 'tab-panel';
-    ph.resources.forEach(r => {
-      resPanel.innerHTML += `
-        <div class="resource-item">
-          <span class="resource-type">${r.type}</span>
-          <div><div class="resource-name">${r.name}</div><div class="resource-sub">${r.sub}</div></div>
-        </div>`;
-    });
-
-    // Schedule panel
-    const schedPanel = document.createElement('div');
-    schedPanel.className = 'tab-panel';
-    ph.schedule.forEach(s => {
-      schedPanel.innerHTML += `
-        <div class="timeline-row">
-          <span class="week-badge">${s.period}</span>
-          <div class="week-task">${s.task}</div>
-        </div>`;
-    });
-
-    [conceptsPanel, whyPanel, projPanel, mmPanel, mistakesPanel, resPanel, schedPanel].forEach(p => contentDiv.appendChild(p));
-
-    body.appendChild(tabsDiv);
-    body.appendChild(contentDiv);
+    body.appendChild(tg);
+    if (u.insight) {
+      const ins = document.createElement('div');
+      ins.className = 'insight-box';
+      ins.style.borderLeftColor = u.ic || col.mid;
+      ins.textContent = u.insight;
+      body.appendChild(ins);
+    }
     card.appendChild(body);
-    container.appendChild(card);
+    panels[0].appendChild(card);
   });
+
+  // Projects
+  const lvC = {STARTER:{bg:"#e1f5ee",c:"#0F6E56"},INTERMEDIATE:{bg:"#e8f1fa",c:"#185FA5"},ADVANCED:{bg:"#fbeaf0",c:"#72243E"},EXPLORATION:{bg:"#EEEDFE",c:"#534AB7"},VISION:{bg:"#F1EFE8",c:"#444441"}};
+  (s.projects||[]).forEach(p => {
+    const lv = lvC[p.l]||lvC.STARTER;
+    panels[1].innerHTML += `<div class="proj-item"><span class="proj-lv" style="background:${lv.bg};color:${lv.c}">${p.l}</span><div class="proj-name">${p.n}</div><div class="proj-desc">${p.d}</div></div>`;
+  });
+
+  // Resources
+  (s.resources||[]).forEach(r => {
+    panels[2].innerHTML += `<div class="res-row"><span class="res-type">${r.t}</span><div><div class="res-name">${r.n}</div><div class="res-sub">${r.s}</div></div></div>`;
+  });
+
+  // Schedule
+  (s.schedule||[]).forEach(w => {
+    panels[3].innerHTML += `<div class="week-row"><span class="wk">${w.p}</span><div class="wk-task">${w.t}</div></div>`;
+  });
+
+  // Mistakes
+  (s.mistakes||[]).forEach(mk => {
+    panels[4].innerHTML += `<div class="mistake-row"><div class="m-dot">!</div><div class="m-text"><b>${mk.t}:</b> ${mk.d}</div></div>`;
+  });
+
+  // Mental Models
+  (s.mentalModels||[]).forEach(mm => {
+    panels[5].innerHTML += `<div class="mm-card">${mm}</div>`;
+  });
+
+  m.appendChild(panelWrap);
 }
 
-function toggleCard(card, phId) {
-  const wasExpanded = card.classList.contains('expanded');
-  card.classList.toggle('expanded', !wasExpanded);
-  document.getElementById(`seg-${phId}`).style.opacity = wasExpanded ? '0.25' : '1';
-}
+buildPills();
+buildSidebar();
 
-buildNav();
-buildPhases();
-
-// Auto-expand phase 1
-const firstCard = document.getElementById('phase-1');
-if (firstCard) { firstCard.classList.add('expanded'); document.getElementById('seg-1').style.opacity = '1'; }
+document.getElementById('sbph-1').classList.add('open');
+selectPhase(1);
 </script>
